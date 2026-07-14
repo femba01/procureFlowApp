@@ -1,6 +1,6 @@
 import { PackageCheck } from "lucide-react";
 import { useState } from "react";
-import { useAppStore } from "../../store";
+import { useAppStore } from "../../store/store";
 export default function LoginPage() {
   const [email, setEmail] = useState("muideen@procureflow.demo");
   const login = useAppStore((s) => s.login);

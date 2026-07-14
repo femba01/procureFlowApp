@@ -1,4 +1,4 @@
-import type { Role } from "./types/types";
+import type { Role } from "../types/types";
 export type Permission =
   | "dashboard:view"
   | "requests:view"

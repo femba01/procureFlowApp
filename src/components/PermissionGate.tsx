@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAppStore } from "../store";
-import { hasPermission, type Permission } from "../permissions";
+import { useAppStore } from "../store/store";
+import { hasPermission, type Permission } from "../store/permissions";
 export default function PermissionGate({
   permission,
   children,

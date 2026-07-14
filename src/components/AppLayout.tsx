@@ -14,8 +14,8 @@ import {
   X,
 } from "lucide-react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useAppStore } from "../store";
-import { hasPermission, type Permission } from "../permissions";
+import { useAppStore } from "../store/store";
+import { hasPermission, type Permission } from "../store/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganisationSettings } from "../api/organizationsApi";
 import { useGetProfile } from "../hooks/useGetProfile";
@@ -41,7 +41,7 @@ export default function AppLayout() {
     queryFn: getOrganisationSettings,
   });
 
-  const { profile, isLoading: profileLoading } = useGetProfile();
+  const { profile } = useGetProfile();
 
   const initials = profile?.name
     .split(" ")

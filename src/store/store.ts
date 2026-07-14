@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { User } from "./types/types";
+import type { User } from "../types/types";
 const demoUser: User = {
   id: "usr-1",
   name: "Muideen Adeogun",
