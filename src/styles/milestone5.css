@@ -1,0 +1,373 @@
+.inventory-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 16px;
+}
+.inventory-stats article {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  border: 1px solid #e5e8ee;
+  border-radius: 11px;
+  padding: 17px;
+}
+.inventory-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+.inventory-stat-icon svg {
+  width: 19px;
+}
+.inventory-stat-icon.blue {
+  background: #e7efff;
+  color: #315fdb;
+}
+.inventory-stat-icon.green {
+  background: #e5f7f0;
+  color: #0a8862;
+}
+.inventory-stat-icon.orange {
+  background: #fff1dd;
+  color: #c57415;
+}
+.inventory-stat-icon.purple {
+  background: #f0eaff;
+  color: #754ac6;
+}
+.inventory-stats span,
+.inventory-stats strong,
+.inventory-stats small {
+  display: block;
+}
+.inventory-stats span {
+  font-size: 9px;
+  color: #8590a1;
+}
+.inventory-stats strong {
+  font: 700 18px "Manrope";
+  margin: 4px 0;
+}
+.inventory-stats small {
+  font-size: 8px;
+  color: #959daa;
+}
+.stock-health {
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.health-bar {
+  height: 9px;
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 18px 0 10px;
+}
+.health-bar i.healthy,
+.health-legend i.healthy {
+  background: #1aa477;
+}
+.health-bar i.low,
+.health-legend i.low {
+  background: #f0a52b;
+}
+.health-bar i.empty,
+.health-legend i.empty {
+  background: #df5353;
+}
+.health-legend {
+  display: flex;
+  gap: 22px;
+}
+.health-legend span {
+  font-size: 9px;
+  color: #778295;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.health-legend i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+}
+.health-legend b {
+  color: #3a4557;
+}
+.inventory-toolbar {
+  justify-content: space-between;
+}
+.inventory-toolbar > select {
+  height: 38px;
+  border: 1px solid #dce1e9;
+  background: white;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #596579;
+  font-size: 11px;
+}
+.inventory-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.inventory-name > span {
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  background: #ecf1ff;
+  color: #3c67d4;
+  display: grid;
+  place-items: center;
+}
+.inventory-name svg {
+  width: 16px;
+}
+.stock-badge {
+  display: inline-flex;
+  border-radius: 20px;
+  padding: 5px 9px;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stock-badge.in-stock {
+  background: #e5f7f0;
+  color: #07815d;
+}
+.stock-badge.low-stock {
+  background: #fff2dc;
+  color: #ae6813;
+}
+.stock-badge.out-of-stock {
+  background: #ffeaea;
+  color: #be3f3f;
+}
+.inventory-hero {
+  padding: 22px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 15px;
+  align-items: center;
+}
+.large-item-icon {
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  background: #e8efff;
+  color: #315fdb;
+  display: grid;
+  place-items: center;
+}
+.inventory-hero h2 {
+  font: 700 20px "Manrope";
+  margin: 0;
+}
+.inventory-hero p {
+  font-size: 10px;
+  color: #7d8899;
+  margin: 6px 0 0;
+}
+.inventory-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 16px 0;
+}
+.inventory-detail-stats article {
+  padding: 16px;
+}
+.inventory-detail-stats span,
+.inventory-detail-stats strong,
+.inventory-detail-stats small {
+  display: block;
+}
+.inventory-detail-stats span {
+  font-size: 9px;
+  color: #8791a2;
+}
+.inventory-detail-stats strong {
+  font: 700 20px "Manrope";
+  margin: 6px 0;
+}
+.inventory-detail-stats small {
+  font-size: 8px;
+  color: #8f98a6;
+}
+.inventory-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+.movement-panel {
+  padding: 20px 0 0;
+}
+.movement-panel .panel-title {
+  padding: 0 20px 16px;
+}
+.movement-type {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.movement-type > svg {
+  width: 29px;
+  height: 29px;
+  padding: 7px;
+  border-radius: 8px;
+}
+.movement-type.positive > svg {
+  background: #e5f7f0;
+  color: #08815d;
+}
+.movement-type.negative > svg {
+  background: #fff0e7;
+  color: #c76624;
+}
+.movement-type span strong,
+.movement-type span small {
+  display: block;
+}
+.positive-number {
+  color: #07815d !important;
+  font-weight: 700;
+}
+.negative-number {
+  color: #c4513c !important;
+  font-weight: 700;
+}
+.reorder-card {
+  padding: 20px;
+  text-align: center;
+}
+.reorder-card h3 {
+  font: 700 14px "Manrope";
+  text-align: left;
+  margin: 0;
+}
+.reorder-gauge {
+  width: 140px;
+  height: 75px;
+  overflow: hidden;
+  margin: 25px auto 12px;
+}
+.reorder-gauge > div {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 270deg,
+    #3d6de0 0deg,
+    var(--stock-angle),
+    #e8ebf0 var(--stock-angle),
+    180deg,
+    transparent 180deg
+  );
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+}
+.reorder-gauge > div:after {
+  content: "";
+  position: absolute;
+  inset: 13px;
+  background: white;
+  border-radius: 50%;
+  z-index: 0;
+}
+.reorder-gauge strong,
+.reorder-gauge span {
+  z-index: 1;
+}
+.reorder-gauge strong {
+  font: 700 20px "Manrope";
+}
+.reorder-gauge span {
+  font-size: 8px;
+  color: #8c95a5;
+}
+.reorder-card p {
+  font-size: 9px;
+  color: #758194;
+  line-height: 1.5;
+}
+.reorder-card button {
+  width: 100%;
+  margin-top: 10px;
+}
+.adjustment-modal {
+  width: min(620px, 100%);
+}
+.adjustment-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 22px 24px;
+}
+.adjustment-form .full-field,
+.balance-preview,
+.adjustment-form > .mutation-error {
+  grid-column: 1/-1;
+}
+.adjustment-form textarea {
+  width: 100%;
+  border: 1px solid #dce1e9;
+  border-radius: 8px;
+  padding: 10px;
+}
+.balance-preview {
+  display: flex;
+  justify-content: space-between;
+  background: #f1f5ff;
+  border-radius: 8px;
+  padding: 13px;
+  font-size: 10px;
+  color: #66738a;
+}
+.balance-preview strong {
+  color: #315fdb;
+}
+@media (max-width: 1100px) {
+  .inventory-stats,
+  .inventory-detail-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .inventory-detail-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .inventory-stats,
+  .inventory-detail-stats {
+    grid-template-columns: 1fr;
+  }
+  .inventory-toolbar {
+    flex-direction: column;
+  }
+  .inventory-toolbar > select {
+    width: 100%;
+  }
+  .health-legend {
+    flex-wrap: wrap;
+  }
+  .inventory-hero {
+    grid-template-columns: auto 1fr;
+  }
+  .inventory-hero > button {
+    grid-column: 1/-1;
+  }
+  .adjustment-form {
+    grid-template-columns: 1fr;
+  }
+  .adjustment-form .full-field,
+  .balance-preview {
+    grid-column: auto;
+  }
+}

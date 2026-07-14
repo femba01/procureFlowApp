@@ -1,0 +1,495 @@
+.selected-quote {
+  text-decoration: none;
+}
+.order-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-bottom: 18px;
+}
+.order-stats article {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  border: 1px solid #e5e8ee;
+  border-radius: 11px;
+  padding: 16px;
+}
+.order-stats article > svg {
+  width: 38px;
+  height: 38px;
+  padding: 9px;
+  background: #eaf0ff;
+  color: #315fdb;
+  border-radius: 9px;
+}
+.order-stats span,
+.order-stats strong {
+  display: block;
+}
+.order-stats span {
+  font-size: 10px;
+  color: #808b9c;
+}
+.order-stats strong {
+  font: 700 18px "Manrope";
+  margin-top: 3px;
+}
+.order-status {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.order-status.issued {
+  background: #e7f1ff;
+  color: #2873b9;
+}
+.order-status.acknowledged {
+  background: #f0ebff;
+  color: #6949bb;
+}
+.order-status.partially-received {
+  background: #fff3df;
+  color: #a56212;
+}
+.order-status.received {
+  background: #e4f7ef;
+  color: #087b58;
+}
+.order-status.draft {
+  background: #eef0f3;
+  color: #687386;
+}
+.order-status.cancelled {
+  background: #ffe9e9;
+  color: #b43b3b;
+}
+.delivery-progress > div,
+.mini-progress {
+  height: 5px;
+  width: 95px;
+  background: #e7eaf0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.delivery-progress i,
+.mini-progress i {
+  display: block;
+  height: 100%;
+  background: #3d6cdf;
+}
+.delivery-progress small {
+  margin-top: 5px;
+}
+.generate-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) 350px;
+  gap: 18px;
+  align-items: start;
+}
+.po-document {
+  padding: 30px;
+  min-height: 530px;
+}
+.po-doc-title {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #263b64;
+}
+.po-doc-title > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.po-doc-title > div:last-child {
+  display: block;
+  text-align: right;
+}
+.po-doc-title strong,
+.po-doc-title small,
+.po-doc-title span {
+  display: block;
+}
+.po-doc-title > div:last-child span {
+  font-size: 9px;
+  color: #8892a3;
+  text-transform: uppercase;
+}
+.po-doc-title > div:last-child strong {
+  font: 700 18px "Manrope";
+  margin-top: 4px;
+}
+.po-parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 28px 0;
+}
+.po-parties span {
+  font-size: 9px;
+  color: #8a94a5;
+}
+.po-parties strong {
+  display: block;
+  font-size: 13px;
+  margin: 6px 0;
+}
+.po-parties p {
+  font-size: 10px;
+  color: #778295;
+  margin: 0;
+}
+.po-terms {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #e3e7ed;
+  border-radius: 9px;
+}
+.po-terms > div {
+  padding: 15px;
+  border-right: 1px solid #e3e7ed;
+}
+.po-terms > div:last-child {
+  border: 0;
+}
+.po-terms span,
+.po-terms strong {
+  display: block;
+}
+.po-terms span {
+  font-size: 9px;
+  color: #8791a2;
+  margin-bottom: 5px;
+}
+.po-terms strong {
+  font-size: 11px;
+}
+.po-total {
+  margin-top: 80px;
+  border-top: 1px solid #e5e8ee;
+  padding-top: 22px;
+  text-align: right;
+}
+.po-total span,
+.po-total small {
+  display: block;
+  font-size: 9px;
+  color: #8490a2;
+}
+.po-total strong {
+  display: block;
+  font: 700 28px "Manrope";
+  margin: 4px 0;
+}
+.issue-panel {
+  padding: 22px;
+  position: sticky;
+  top: 90px;
+}
+.issue-panel h3 {
+  font: 700 15px "Manrope";
+  margin: 0 0 18px;
+}
+.issue-panel label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #596579;
+  margin: 14px 0;
+}
+.issue-panel input,
+.issue-panel textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #dce1e9;
+  border-radius: 8px;
+  margin-top: 7px;
+  padding: 10px;
+  font-size: 11px;
+  outline: none;
+}
+.issue-note {
+  padding: 12px;
+  background: #f0f5ff;
+  border-radius: 8px;
+  margin: 18px 0;
+}
+.issue-note strong {
+  font-size: 10px;
+}
+.issue-note p {
+  font-size: 9px;
+  color: #69768a;
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
+.order-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: 20px;
+}
+.order-hero h2 {
+  font: 700 25px "Manrope";
+  margin: 7px 0 4px;
+}
+.order-hero p {
+  font-size: 11px;
+  color: #7e899a;
+  margin: 0;
+}
+.order-overview-grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.order-overview-grid > article {
+  padding: 17px;
+}
+.order-overview-grid span,
+.order-overview-grid strong,
+.order-overview-grid small {
+  display: block;
+}
+.order-overview-grid span {
+  font-size: 9px;
+  color: #8490a2;
+}
+.order-overview-grid strong {
+  font: 700 17px "Manrope";
+  margin: 7px 0;
+}
+.order-overview-grid small {
+  font-size: 9px;
+  color: #8d96a5;
+}
+.delivery-card > div:first-child {
+  display: flex;
+  justify-content: space-between;
+}
+.delivery-card > div:first-child strong {
+  margin: 0;
+}
+.large-progress {
+  height: 7px;
+  background: #e7ebf1;
+  border-radius: 7px;
+  overflow: hidden;
+  margin: 13px 0 6px;
+}
+.large-progress i {
+  display: block;
+  height: 100%;
+  background: #3b6bdf;
+}
+.delivery-card p {
+  font-size: 9px;
+  color: #7c8798;
+  margin: 0;
+}
+.order-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  gap: 16px;
+  align-items: start;
+}
+.order-detail-layout > div {
+  display: grid;
+  gap: 16px;
+}
+.order-items-panel {
+  padding: 20px 0 0;
+}
+.order-items-panel .detail-title {
+  padding: 0 20px 16px;
+}
+.receipt-history,
+.po-meta {
+  padding: 20px;
+}
+.receipt-history h3,
+.po-meta h3 {
+  font: 700 14px "Manrope";
+  margin: 0 0 15px;
+}
+.receipt-history > article {
+  display: grid;
+  grid-template-columns: 38px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid #e9ecf1;
+}
+.receipt-icon {
+  width: 36px;
+  height: 36px;
+  background: #e8f7f1;
+  color: #14825f;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+}
+.receipt-icon svg {
+  width: 17px;
+}
+.receipt-history strong,
+.receipt-history p,
+.receipt-history small {
+  display: block;
+  margin: 0;
+}
+.receipt-history strong {
+  font-size: 11px;
+}
+.receipt-history p {
+  font-size: 9px;
+  color: #6f7b8e;
+  margin: 3px 0;
+}
+.receipt-history small {
+  font-size: 8px;
+  color: #929aa8;
+}
+.receipt-history > article > span {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  font-size: 9px;
+  color: #087b58;
+}
+.receipt-history > article > span svg {
+  width: 14px;
+}
+.no-receipts {
+  text-align: center;
+  padding: 35px;
+  color: #8792a3;
+  font-size: 10px;
+}
+.po-info {
+  padding: 12px 0;
+  border-top: 1px solid #e9ecf1;
+}
+.po-info span,
+.po-info strong {
+  display: block;
+}
+.po-info span {
+  font-size: 9px;
+  color: #8993a4;
+  margin-bottom: 5px;
+}
+.po-info strong {
+  font-size: 10px;
+  line-height: 1.5;
+}
+.receipt-modal {
+  width: min(800px, 100%);
+}
+.receipt-form {
+  padding-bottom: 18px;
+}
+.receipt-fields {
+  padding-bottom: 15px;
+}
+.receive-lines {
+  padding: 0 24px;
+}
+.receive-header,
+.receive-row {
+  display: grid;
+  grid-template-columns: 2fr 0.6fr 0.9fr 0.8fr;
+  gap: 10px;
+  align-items: center;
+}
+.receive-header {
+  font-size: 8px;
+  text-transform: uppercase;
+  color: #8993a3;
+  padding: 8px;
+}
+.receive-row {
+  border-top: 1px solid #e8ebf0;
+  padding: 11px 8px;
+  font-size: 10px;
+}
+.receive-row strong,
+.receive-row small {
+  display: block;
+}
+.receive-row small {
+  font-size: 8px;
+  color: #8e97a6;
+  margin-top: 3px;
+}
+.receive-row input {
+  width: 100%;
+  height: 34px;
+  border: 1px solid #dbe0e8;
+  border-radius: 7px;
+  padding: 0 8px;
+}
+.receipt-notes {
+  padding: 15px 24px 0;
+}
+.receipt-notes textarea {
+  width: 100%;
+  border: 1px solid #dbe0e8;
+  border-radius: 8px;
+  padding: 10px;
+}
+.receipt-form > .mutation-error {
+  padding: 0 24px;
+}
+@media (max-width: 1100px) {
+  .order-stats,
+  .order-overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .generate-layout,
+  .order-detail-layout {
+    grid-template-columns: 1fr;
+  }
+  .issue-panel {
+    position: static;
+  }
+}
+@media (max-width: 760px) {
+  .order-stats,
+  .order-overview-grid {
+    grid-template-columns: 1fr;
+  }
+  .po-document {
+    padding: 20px;
+  }
+  .po-parties,
+  .po-terms {
+    grid-template-columns: 1fr;
+  }
+  .po-terms > div {
+    border-right: 0;
+    border-bottom: 1px solid #e3e7ed;
+  }
+  .po-total {
+    margin-top: 40px;
+  }
+  .order-hero {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .receive-header,
+  .receive-row {
+    grid-template-columns: 1.5fr 0.5fr 0.7fr 0.7fr;
+    font-size: 8px;
+  }
+  .modal-layer {
+    padding: 8px;
+  }
+}
