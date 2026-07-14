@@ -2,8 +2,8 @@
 import type { OrganisationSettings } from "../types/settings";
 import supabase from "./supabase";
 
-export const getOrganisationSettings = async () => {
-  const {data, error} = await supabase.from('organizations').select('*').single();
+export const getOrganisationSettings = async (id: string) => {
+  const {data, error} = await supabase.from('organizations').select('*').eq('id', id).single();
   if (error) {
     throw new Error(error.message);
   }

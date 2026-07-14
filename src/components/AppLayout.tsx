@@ -41,7 +41,7 @@ export default function AppLayout() {
 
   const { data: organization, isLoading } = useQuery({
     queryKey: ["organizationSettings"],
-    queryFn: getOrganisationSettings,
+    queryFn: () => getOrganisationSettings(user?.organization_id || ""),
   });
 
   if (isLoading) return <div className="route-loader" role="status" aria-live="polite">
