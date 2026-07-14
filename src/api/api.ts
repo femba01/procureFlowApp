@@ -1232,7 +1232,6 @@ export const getOrganisationSettings = async () => {
   return data as OrganisationSettings;
 };
 export async function updateOrganisationSettings(input: OrganisationSettings) {
-  await delay(600);
   if (
     input.managerApprovalThreshold > input.financeApprovalThreshold ||
     input.financeApprovalThreshold > input.executiveApprovalThreshold
@@ -1240,6 +1239,13 @@ export async function updateOrganisationSettings(input: OrganisationSettings) {
     throw new Error(
       "Approval thresholds must increase from manager to executive level",
     );
-  organisationSettings = { ...input };
-  return organisationSettings;
+  const { data, error } = await supabase
+    .from("organizations")
+    .update(input)
+    .eq("id", input.id)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data as OrganisationSettings;
 }

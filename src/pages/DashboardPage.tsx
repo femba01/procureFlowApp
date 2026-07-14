@@ -29,7 +29,7 @@ export default function DashboardPage() {
     queryFn: getDashboard,
   });
 
-  const { profile, isLoading: profileLoading } = useGetProfile();
+  const { profile } = useGetProfile();
 
   if (isLoading) return <DashboardSkeleton />;
 

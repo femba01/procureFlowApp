@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import PermissionGate from "./components/PermissionGate";
@@ -26,6 +26,22 @@ const secure = (permission: Permission, element: ReactNode) => (
 );
 export default function App() {
   const user = useAppStore((s) => s.user);
+  const authReady = useAppStore((s) => s.authReady);
+  const initializeAuth = useAppStore((s) => s.initializeAuth);
+
+  useEffect(() => {
+    void initializeAuth();
+  }, [initializeAuth]);
+
+  if (!authReady) {
+    return (
+      <div className="route-loader" role="status" aria-live="polite">
+        <span />
+        <p>Loading workspace…</p>
+      </div>
+    );
+  }
+
   return (
     <Suspense
       fallback={

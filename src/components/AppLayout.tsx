@@ -4,6 +4,7 @@ import {
   ChartNoAxesCombined,
   ClipboardList,
   LayoutDashboard,
+  LogOut,
   Menu,
   PackageCheck,
   Search,
@@ -13,12 +14,12 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
+import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAppStore } from "../store/store";
 import { hasPermission, type Permission } from "../store/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganisationSettings } from "../api/organizationsApi";
-import { useGetProfile } from "../hooks/useGetProfile";
 
 const nav = [
   ["Overview", "/dashboard", LayoutDashboard, "dashboard:view"],
@@ -31,8 +32,10 @@ const nav = [
 ] as const;
 
 export default function AppLayout() {
-
-  const { user, sidebarOpen, toggleSidebar, closeSidebar } = useAppStore();
+  const { user, sidebarOpen, toggleSidebar, closeSidebar, logout } =
+    useAppStore();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const location = useLocation();
   const page = nav.find((n) => n[1] === location.pathname)?.[0] ?? "Workspace";
 
@@ -41,14 +44,6 @@ export default function AppLayout() {
     queryFn: getOrganisationSettings,
   });
 
-  const { profile } = useGetProfile();
-
-  const initials = profile?.name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
-
   if (isLoading) return <div className="route-loader" role="status" aria-live="polite">
     <span />
     <p>Loading workspace…</p>
@@ -56,6 +51,19 @@ export default function AppLayout() {
 
   if (!organization) return null;
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setLogoutError("");
+
+    try {
+      await logout();
+    } catch (error) {
+      setLogoutError(
+        error instanceof Error ? error.message : "Unable to log out.",
+      );
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -108,19 +116,34 @@ export default function AppLayout() {
             ))}
         </nav>
         <div className="sidebar-bottom">
-          {hasPermission(profile?.role, "settings:manage") && (
-            <NavLink to="/settings">
+          {hasPermission(user?.role, "settings:manage") && (
+            <NavLink to="/settings" className={location.pathname === "/settings" ? "bg-[#25375b] !text-white" : ""}>
               <Settings size={19} />
               Settings
             </NavLink>
           )}
+          <button
+            type="button"
+            className="sidebar-logout"
+            disabled={isLoggingOut}
+            onClick={handleLogout}
+          >
+            <LogOut size={18} />
+            {isLoggingOut ? "Logging out…" : "Log out"}
+          </button>
+          {logoutError && (
+            <small className="logout-error" role="alert">
+              {logoutError}
+            </small>
+          )}
           <div className="user-card">
-            <div className="avatar">{initials}</div>
-            <div>
-              <strong>{profile?.name}</strong>
-              <small>{profile?.role}</small>
+            <div className="avatar">{user?.initials}</div>
+            <div className="user-card-details">
+              <strong>{user?.name}</strong>
+              <small>{user?.role}</small>
             </div>
           </div>
+          
         </div>
       </aside>
       {sidebarOpen && (
@@ -159,12 +182,33 @@ export default function AppLayout() {
               <Bell size={20} />
               <span />
             </button>
-            <div
-              className="header-avatar"
-              aria-label={`${user?.name}, ${user?.role}`}
-            >
-              {user?.initials}
-            </div>
+            <details className="account-menu">
+              <summary
+                className="header-avatar"
+                aria-label={`Open account menu for ${user?.name}`}
+              >
+                {user?.initials}
+              </summary>
+              <div className="account-dropdown">
+                <div className="account-dropdown-user">
+                  <strong>{user?.name}</strong>
+                  <small>{user?.email}</small>
+                </div>
+                <button
+                  type="button"
+                  disabled={isLoggingOut}
+                  onClick={handleLogout}
+                >
+                  <LogOut size={17} />
+                  {isLoggingOut ? "Logging out…" : "Log out"}
+                </button>
+                {logoutError && (
+                  <small className="logout-error" role="alert">
+                    {logoutError}
+                  </small>
+                )}
+              </div>
+            </details>
           </div>
         </header>
         <div className="page">

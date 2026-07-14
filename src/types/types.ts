@@ -18,6 +18,7 @@ export interface User {
   role: Role;
   department: string;
   organization: string;
+  user_id: string;
   initials: string;
 }
 export interface PurchaseRequest {

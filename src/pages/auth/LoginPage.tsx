@@ -1,9 +1,32 @@
 import { PackageCheck } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "../../store/store";
+
 export default function LoginPage() {
-  const [email, setEmail] = useState("muideen@procureflow.demo");
+  const [email, setEmail] = useState("demo@procureFlow.com");
+  const [password, setPassword] = useState("procureFlow");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const login = useAppStore((s) => s.login);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      await login(email.trim(), password);
+    } catch (loginError) {
+      setError(
+        loginError instanceof Error
+          ? loginError.message
+          : "Unable to sign in. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="login-page">
       <section className="login-brand">
@@ -33,12 +56,7 @@ export default function LoginPage() {
         </blockquote>
       </section>
       <section className="login-form">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            login(email);
-          }}
-        >
+        <form onSubmit={handleSubmit}>
           <p className="eyebrow">WELCOME BACK</p>
           <h2>Sign in to your workspace</h2>
           <p>Use the demo account to explore ProcureFlow.</p>
@@ -53,8 +71,18 @@ export default function LoginPage() {
           </label>
           <label>
             Password
-            <input type="password" value="demopassword" readOnly />
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+            />
           </label>
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
           <div className="form-row">
             <label className="check">
               <input type="checkbox" defaultChecked />
@@ -64,8 +92,8 @@ export default function LoginPage() {
               Forgot password?
             </button>
           </div>
-          <button className="primary-button full">
-            Sign in to ProcureFlow
+          <button className="primary-button full" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in…" : "Sign in to ProcureFlow"}
           </button>
           <small className="demo-note">Demo role: Procurement Officer</small>
         </form>
