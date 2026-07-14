@@ -1,5 +1,5 @@
 
-import type { OrganisationSettings } from "../types/types";
+import type { OrganisationSettings } from "../types/settings";
 import supabase from "./supabase";
 
 export const getOrganisationSettings = async () => {

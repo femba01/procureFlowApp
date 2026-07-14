@@ -1,25 +1,27 @@
+import type { AuditLog } from "../types/audit";
+import type { DashboardData } from "../types/dashboard";
+import type { DepartmentBudget, SpendRecord } from "../types/finance";
 import type {
-  AuditLog,
-  CreateOrderInput,
-  CreateReceiptInput,
-  CreateRequestInput,
-  CreateSupplierInput,
-  DashboardData,
-  DepartmentBudget,
-  GoodsReceipt,
   InventoryItem,
-  OrganisationSettings,
-  PurchaseOrder,
-  PurchaseRequest,
-  PurchaseRequestDetails,
-  Quotation,
-  RequestStatus,
-  SpendRecord,
   StockAdjustmentInput,
   StockMovement,
-  Supplier,
   Warehouse,
-} from "../types/types";
+} from "../types/inventory";
+import type {
+  CreateOrderInput,
+  CreateReceiptInput,
+  GoodsReceipt,
+  PurchaseOrder,
+} from "../types/orders";
+import type { Quotation } from "../types/quotations";
+import type {
+  CreateRequestInput,
+  PurchaseRequest,
+  PurchaseRequestDetails,
+  RequestStatus,
+} from "../types/requests";
+import type { OrganisationSettings } from "../types/settings";
+import type { CreateSupplierInput, Supplier } from "../types/suppliers";
 import supabase from "./supabase";
 let requests: PurchaseRequest[] = [
   {

@@ -2,7 +2,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { getProfiles } from "../api/profilesApi";
 import supabase from "../api/supabase";
-import type { User } from "../types/types";
+import type { User } from "../types/auth";
 
 interface AppState {
   user: User | null;

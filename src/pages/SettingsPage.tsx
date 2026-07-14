@@ -21,7 +21,7 @@ import {
   OrganisationSettingsForm,
   ProcurementSettings,
 } from "../components/settings/SettingsSections";
-import type { OrganisationSettings } from "../types/types";
+import type { OrganisationSettings } from "../types/settings";
 
 const tabs = [
   ["organisation", "Organisation", Building2],

@@ -1,0 +1,30 @@
+export interface OrganisationSettings {
+  id: string;
+  companyName: string;
+  legalName: string;
+  email: string;
+  phone: string;
+  website: string;
+  taxId: string;
+  address: string;
+  country: string;
+  currency: string;
+  timezone: string;
+  financialYearStart: string;
+  purchaseOrderPrefix: string;
+  requestPrefix: string;
+  defaultPaymentTerms: string;
+  defaultWarehouseId: string;
+  requireThreeQuotes: boolean;
+  allowEmergencyPurchases: boolean;
+  autoCreateInventory: boolean;
+  managerApprovalThreshold: number;
+  financeApprovalThreshold: number;
+  executiveApprovalThreshold: number;
+  emailApprovals: boolean;
+  emailOrders: boolean;
+  emailReceipts: boolean;
+  emailLowStock: boolean;
+  dailyDigest: boolean;
+  lowStockDigestTime: string;
+}

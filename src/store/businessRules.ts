@@ -1,4 +1,4 @@
-import type { StockStatus } from "../types/types";
+import type { StockStatus } from "../types/inventory";
 export const approvalRoute = (total: number) =>
   total > 1_000_000
     ? ["Department Manager", "Finance Officer", "Procurement"]

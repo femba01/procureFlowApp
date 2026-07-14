@@ -1,4 +1,4 @@
-import type { StockStatus } from "../types/types";
+import type { StockStatus } from "../types/inventory";
 
 export default function StockBadge({ status }: { status: StockStatus }) {
   return (

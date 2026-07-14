@@ -1,4 +1,4 @@
-import type { PurchaseOrderStatus } from "../types/types";
+import type { PurchaseOrderStatus } from "../types/orders";
 
 export default function OrderStatus({
   status,

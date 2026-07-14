@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getAuditLogs, getSpendRecords } from "../api/api";
-import type { SpendRecord } from "../types/types";
+import type { SpendRecord } from "../types/finance";
 import { money } from "../utils/currency";
 import { csvCell, downloadCsv } from "../utils/csv";
 export default function ReportsPage() {

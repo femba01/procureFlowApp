@@ -1,7 +1,8 @@
 import { GitBranch } from "lucide-react";
 import type { ReactNode } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { OrganisationSettings, Warehouse } from "../../types/types";
+import type { Warehouse } from "../../types/inventory";
+import type { OrganisationSettings } from "../../types/settings";
 
 type SettingsForm = UseFormReturn<OrganisationSettings>;
 
