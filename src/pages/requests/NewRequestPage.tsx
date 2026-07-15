@@ -3,10 +3,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CalendarDays, Plus, Save, Trash2 } from "lucide-react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { createRequest } from "../api/api";
-import FormField from "../components/FormField";
-import { requestSchema, type RequestFormValues } from "../schemas/request";
-import { money } from "../utils/currency";
+import { createRequest } from "../../api/api";
+import FormField from "../../components/FormField";
+import { requestSchema, type RequestFormValues } from "../../schemas/request";
+import { money } from "../../utils/currency";
 
 export default function NewRequestPage() {
   const navigate = useNavigate();

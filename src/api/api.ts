@@ -26,6 +26,10 @@ import supabase from "./supabase";
 let requests: PurchaseRequest[] = [
   {
     id: "PR-2026-084",
+    reference: "PR-2026-084",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Engineering laptops",
     department: "Technology",
     requester: "Tunde Lawson",
@@ -37,6 +41,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-083",
+    reference: "PR-2026-083",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Office stationery restock",
     department: "Operations",
     requester: "Amaka Okafor",
@@ -48,6 +56,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-082",
+    reference: "PR-2026-082",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Marketing campaign assets",
     department: "Marketing",
     requester: "David Mensah",
@@ -59,6 +71,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-081",
+    reference: "PR-2026-081",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Safety equipment",
     department: "Facilities",
     requester: "Sarah Ibrahim",
@@ -70,6 +86,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-080",
+    reference: "PR-2026-080",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Team training subscription",
     department: "People",
     requester: "Bola James",
@@ -90,7 +110,7 @@ function hydrate(request: PurchaseRequest): PurchaseRequestDetails {
         : "Required to support planned departmental operations and maintain service delivery.",
     neededBy: "25 Jul 2026",
     costCentre: `${request.department.slice(0, 3).toUpperCase()}-2026`,
-    vendorPreference: "Approved supplier panel",
+    preferredSupplier: "Approved supplier panel",
     lineItems: Array.from({ length: Math.min(request.items, 3) }, (_, i) => ({
       id: `item-${i}`,
       description: i === 0 ? request.title : "Accessories and setup",
@@ -177,8 +197,12 @@ export async function createRequest(input: CreateRequestInput) {
   }).format(new Date());
   const request: PurchaseRequest = {
     id,
+    reference: id,
+    requesterId: "",
+    organizationId: "",
+    departmentId: input.departmentId,
     title: input.title,
-    department: input.department,
+    department: input.departmentId,
     requester: "Muideen Adeogun",
     amount,
     status: "Pending approval",

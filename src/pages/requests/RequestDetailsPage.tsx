@@ -11,10 +11,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getRequest, updateRequestStatus } from "../api/api";
-import DetailField from "../components/DetailField";
-import StatusBadge from "../components/StatusBadge";
-import { money } from "../utils/currency";
+import { getRequest, updateRequestStatus } from "../../api/api";
+import DetailField from "../../components/DetailField";
+import StatusBadge from "../../components/StatusBadge";
+import { money } from "../../utils/currency";
 export default function RequestDetailsPage() {
   const { requestId = "" } = useParams();
   const client = useQueryClient();
@@ -94,7 +94,7 @@ export default function RequestDetailsPage() {
               <DetailField
                 className="info"
                 label="Total value"
-                value={money(data.amount)}
+                value={money(data.estimated_total)}
               />
               <DetailField
                 className="info"
@@ -104,7 +104,7 @@ export default function RequestDetailsPage() {
               <DetailField
                 className="info"
                 label="Needed by"
-                value={data.neededBy}
+                value={data.needed_by ? new Date(data.needed_by).toLocaleDateString() : "N/A"}
               />
               <DetailField
                 className="info"
@@ -133,7 +133,7 @@ export default function RequestDetailsPage() {
                 <h3>Requested items</h3>
                 <p>{data.lineItems.length} line items</p>
               </div>
-              <strong>{money(data.amount)}</strong>
+              <strong>{money(data.estimated_total)}</strong>
             </div>
             <div className="detail-items">
               {data.lineItems.map((item) => (

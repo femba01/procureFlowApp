@@ -9,10 +9,10 @@ import {
   Star,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { getSupplier } from "../api/api";
-import DetailField from "../components/DetailField";
-import SupplierScore from "../components/SupplierScore";
-import { money } from "../utils/currency";
+import { getSupplier } from "../../api/api";
+import DetailField from "../../components/DetailField";
+import SupplierScore from "../../components/SupplierScore";
+import { money } from "../../utils/currency";
 export default function SupplierDetailsPage() {
   const { supplierId = "" } = useParams();
   const { data, isLoading } = useQuery({

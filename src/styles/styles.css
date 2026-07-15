@@ -631,6 +631,10 @@ td small {
   color: #6b4bc2;
   background: #f0ebff;
 }
+.status.draft {
+  color: #554a53;
+  background: #f0ebff;
+}
 .status.completed {
   color: #07815c;
   background: #e3f7ef;

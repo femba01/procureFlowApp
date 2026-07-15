@@ -9,9 +9,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { adjustStock, getInventoryItem, getStockMovements } from "../api/api";
-import StockBadge from "../components/StockBadge";
-import { money } from "../utils/currency";
+import { adjustStock, getInventoryItem, getStockMovements } from "../../api/api";
+import StockBadge from "../../components/StockBadge";
+import { money } from "../../utils/currency";
 export default function InventoryDetailsPage() {
   const { itemId = "" } = useParams();
   const client = useQueryClient();

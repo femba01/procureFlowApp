@@ -4,9 +4,9 @@ import { Building2, Plus, Search, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { createSupplier, getSuppliers } from "../api/api";
-import { supplierSchema, type SupplierFormValues } from "../schemas/supplier";
-import { compactMoney as money } from "../utils/currency";
+import { createSupplier, getSuppliers } from "../../api/api";
+import { supplierSchema, type SupplierFormValues } from "../../schemas/supplier";
+import { compactMoney as money } from "../../utils/currency";
 export default function SuppliersPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");

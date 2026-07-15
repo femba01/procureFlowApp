@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { createGoodsReceipt, getOrder, updateOrderStatus } from "../api/api";
-import DetailField from "../components/DetailField";
-import OrderStatus from "../components/OrderStatus";
-import { money } from "../utils/currency";
+import { createGoodsReceipt, getOrder, updateOrderStatus } from "../../api/api";
+import DetailField from "../../components/DetailField";
+import OrderStatus from "../../components/OrderStatus";
+import { money } from "../../utils/currency";
 export default function OrderDetailsPage() {
   const { orderId = "" } = useParams();
   const client = useQueryClient();

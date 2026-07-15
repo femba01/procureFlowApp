@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getInventory, getWarehouses } from "../api/api";
-import StockBadge from "../components/StockBadge";
-import { compactMoney as money } from "../utils/currency";
+import { getInventory, getWarehouses } from "../../api/api";
+import StockBadge from "../../components/StockBadge";
+import { compactMoney as money } from "../../utils/currency";
 export default function InventoryPage() {
   const [query, setQuery] = useState("");
   const [warehouse, setWarehouse] = useState("All");
