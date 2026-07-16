@@ -118,52 +118,54 @@ export default function RequestsPage() {
         <div className="table-wrap">
           {rows && <div>
             <table className="text-nowrap">
-            <thead>
-              <tr>
-                <th>Request</th>
-                <th>Requested by</th>
-                <th>Department</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentUsers?.map((r) => (
-                <tr
-                  key={r.id}
-                  onClick={() => navigate(`/requests/${r.id}`)}
-                  className="clickable-row"
-                >
-                  <td>
-                    <strong>{r.title}</strong>
-                    <small>
-                      {r.request_number}
-                    </small>
-                  </td>
-                  <td>{r.requester}</td>
-                  <td>{r.department}</td>
-                  <td className="amount">{money(r.estimated_total)}</td>
-                  <td>
-                    <StatusBadge status={r.status} />
-                  </td>
-                  <td>
-                    <span className={`priority ${r.priority.toLowerCase()}`}>
-                      {r.priority}
-                    </span>
-                  </td>
-                  <td>{DateTimeFormat(r.created_at, { dateStyle: "long" })}</td>
+              <thead>
+                <tr>
+                  <th>Request</th>
+                  <th>Requested by</th>
+                  <th>Department</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                  <th>Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {pageCount > 1 && (
+              </thead>
+              <tbody>
+                {currentUsers?.map((r) => (
+                  <tr
+                    key={r.id}
+                    onClick={() => navigate(`/requests/${r.id}`)}
+                    className="clickable-row"
+                  >
+                    <td>
+                      <strong>{r.title}</strong>
+                      <small>
+                        {r.request_number}
+                      </small>
+                    </td>
+                    <td>{r.requester}</td>
+                    <td>{r.department}</td>
+                    <td className="amount">{money(r.estimated_total)}</td>
+                    <td>
+                      <StatusBadge status={r.status} />
+                    </td>
+                    <td>
+                      <span className={`priority ${r.priority.toLowerCase()}`}>
+                        {r.priority}
+                      </span>
+                    </td>
+                    <td>{DateTimeFormat(r.created_at, { dateStyle: "long" })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>}
+          <div>
+            {pageCount > 1 && (
           <ClientPagination
             pageCount={pageCount}
             handlePageChange={handlePageChange}
           />)}
-          </div>}
+          </div>
           {rows && rows.length === 0 && (
             <div className="empty">
               <Search />

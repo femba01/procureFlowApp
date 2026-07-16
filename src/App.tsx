@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
 import PermissionGate from "./components/PermissionGate";
 import { useAppStore } from "./store/store";
-import type { Permission } from "./store/permissions";
+import type { Permission } from "./types/permissions";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const NewRequestPage = lazy(() => import("./pages/requests/NewRequestPage"));

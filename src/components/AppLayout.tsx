@@ -17,7 +17,7 @@ import {
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAppStore } from "../store/store";
-import { hasPermission, type Permission } from "../store/permissions";
+import { hasPermission, type Permission } from "../types/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganisationSettings } from "../api/organizationsApi";
 import { getPurchaseRequests } from "../api/requestsApi";
