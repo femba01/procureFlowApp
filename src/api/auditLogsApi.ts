@@ -15,7 +15,7 @@ import supabase from "./supabase";
 //   return data as AuditLogRecord[];
 // };
 
-export const getAuditLogs = async (entityType?: string) => {
+export const getAuditLogs = async (entityType?: string, entityId?: string) => {
   let query = supabase
     .from("audit_logs")
     .select("*")
@@ -23,6 +23,9 @@ export const getAuditLogs = async (entityType?: string) => {
 
   if (entityType?.trim()) {
     query = query.eq("entity_type", entityType.trim());
+  }
+  if (entityId?.trim()) {
+    query = query.eq("entity_id", entityId.trim());
   }
 
   const { data, error } = await query;

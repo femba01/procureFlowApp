@@ -7,7 +7,7 @@ import { money } from "../../utils/currency";
 import { useAppStore } from "../../store/store";
 import { getPurchaseRequests } from "../../api/requestsApi";
 import { DateTimeFormat } from "../../utils/datetimeFormat";
-import ClientPagination from "../../components/clientPagination";
+import ClientPagination from "../../components/ClientPagination";
 
 export default function RequestsPage() {
   const [query, setQuery] = useState("");
@@ -52,7 +52,11 @@ export default function RequestsPage() {
 
   const itemsPerPage = 10;
   const pageCount = Math.ceil((rows && rows.length / itemsPerPage));
-  const startIndex = currentPage * itemsPerPage;
+  const safeCurrentPage = Math.min(
+    currentPage,
+    Math.max(0, pageCount - 1),
+  );
+  const startIndex = safeCurrentPage * itemsPerPage;
 
   const currentUsers = rows.slice(
     startIndex,
@@ -163,6 +167,7 @@ export default function RequestsPage() {
             {pageCount > 1 && (
           <ClientPagination
             pageCount={pageCount}
+            currentPage={safeCurrentPage}
             handlePageChange={handlePageChange}
           />)}
           </div>

@@ -95,7 +95,8 @@ export default function LoginPage() {
           <button className="primary-button full" disabled={isSubmitting}>
             {isSubmitting ? "Signing in…" : "Sign in to ProcureFlow"}
           </button>
-          <small className="demo-note">Demo role: Procurement Officer</small>
+          <small className="demo-note">Demo role: Administrator</small>
+          <small className="demo-note"> Demo login: Email: demo@procureFlow.com <br/> Password: procureFlow</small>
         </form>
       </section>
     </main>

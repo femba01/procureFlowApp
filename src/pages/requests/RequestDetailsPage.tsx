@@ -28,7 +28,7 @@ export default function RequestDetailsPage() {
 
   const {data: auditLogs} = useQuery({
     queryKey: ["auditLogs"],
-    queryFn: () => getAuditLogs("Purchase request"),
+    queryFn: () => getAuditLogs("Purchase request", requestId),
   });
 
   if (isLoading) return <div className="detail-loading" />;
