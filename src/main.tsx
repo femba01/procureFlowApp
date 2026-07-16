@@ -13,6 +13,7 @@ import "./styles/milestone5.css";
 import "./styles/milestone6.css";
 import "./styles/production.css";
 import "./styles/settings.css";
+import "./styles/pagination.css";
 
 const client = new QueryClient({
   defaultOptions: {

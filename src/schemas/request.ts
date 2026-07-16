@@ -10,10 +10,12 @@ const requestItemSchema = z.object({
 export const requestSchema = z.object({
   title: z.string().min(5, "Use at least 5 characters"),
   department: z.string().min(1, "Select a department"),
-  priority: z.enum(["Low", "Medium", "High"]),
+  requester: z.string().min(1, "Select a requester"),
+  departmentId: z.string().uuid("Select a department"),
+  priority: z.enum(["low", "medium", "high"]),
   neededBy: z.string().min(1, "Select the required date"),
   costCentre: z.string().min(3, "Enter a cost centre"),
-  vendorPreference: z.string().optional(),
+  preferredSupplierId: z.union([z.literal(""), z.string().uuid()]),
   businessReason: z.string().min(20, "Provide at least 20 characters"),
   lineItems: z.array(requestItemSchema).min(1),
 });

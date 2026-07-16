@@ -10,12 +10,17 @@ export interface PurchaseRequest {
   id: string;
   title: string;
   department: string;
+  department_id: string;
   requester: string;
-  amount: number;
+  requester_id: string;
+  request_number: string;
+  needed_by: Date | null;
+  cost_centre: string;
+  estimated_total: number;
   status: RequestStatus;
+  items: RequestItem[];
   priority: "Low" | "Medium" | "High";
-  createdAt: string;
-  items: number;
+  created_at: string;
 }
 
 export interface RequestItem {

@@ -8,9 +8,9 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrders } from "../api/api";
-import OrderStatus from "../components/OrderStatus";
-import { money } from "../utils/currency";
+import { getOrders } from "../../api/api";
+import OrderStatus from "../../components/OrderStatus";
+import { money } from "../../utils/currency";
 export default function OrdersPage() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();

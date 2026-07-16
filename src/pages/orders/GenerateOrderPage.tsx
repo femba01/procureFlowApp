@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, FileCheck2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { generateOrder, getQuotations } from "../api/api";
-import { money } from "../utils/currency";
+import { generateOrder, getQuotations } from "../../api/api";
+import { money } from "../../utils/currency";
 export default function GenerateOrderPage() {
   const { quotationId = "" } = useParams();
   const navigate = useNavigate();

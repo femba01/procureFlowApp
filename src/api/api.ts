@@ -21,11 +21,14 @@ import type {
   RequestStatus,
 } from "../types/requests";
 import type { OrganisationSettings } from "../types/settings";
-import type { CreateSupplierInput, Supplier } from "../types/suppliers";
 import supabase from "./supabase";
 let requests: PurchaseRequest[] = [
   {
     id: "PR-2026-084",
+    reference: "PR-2026-084",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Engineering laptops",
     department: "Technology",
     requester: "Tunde Lawson",
@@ -37,6 +40,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-083",
+    reference: "PR-2026-083",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Office stationery restock",
     department: "Operations",
     requester: "Amaka Okafor",
@@ -48,6 +55,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-082",
+    reference: "PR-2026-082",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Marketing campaign assets",
     department: "Marketing",
     requester: "David Mensah",
@@ -59,6 +70,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-081",
+    reference: "PR-2026-081",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Safety equipment",
     department: "Facilities",
     requester: "Sarah Ibrahim",
@@ -70,6 +85,10 @@ let requests: PurchaseRequest[] = [
   },
   {
     id: "PR-2026-080",
+    reference: "PR-2026-080",
+    requesterId: "",
+    organizationId: "",
+    departmentId: "",
     title: "Team training subscription",
     department: "People",
     requester: "Bola James",
@@ -90,7 +109,7 @@ function hydrate(request: PurchaseRequest): PurchaseRequestDetails {
         : "Required to support planned departmental operations and maintain service delivery.",
     neededBy: "25 Jul 2026",
     costCentre: `${request.department.slice(0, 3).toUpperCase()}-2026`,
-    vendorPreference: "Approved supplier panel",
+    preferredSupplier: "Approved supplier panel",
     lineItems: Array.from({ length: Math.min(request.items, 3) }, (_, i) => ({
       id: `item-${i}`,
       description: i === 0 ? request.title : "Accessories and setup",
@@ -177,8 +196,12 @@ export async function createRequest(input: CreateRequestInput) {
   }).format(new Date());
   const request: PurchaseRequest = {
     id,
+    reference: id,
+    requesterId: "",
+    organizationId: "",
+    departmentId: input.departmentId,
     title: input.title,
-    department: input.department,
+    department: input.departmentId,
     requester: "Muideen Adeogun",
     amount,
     status: "Pending approval",
@@ -250,7 +273,7 @@ export async function updateRequestStatus({
   return updated;
 }
 
-let suppliers: Supplier[] = [
+export const legacySuppliers = [
   {
     id: "SUP-001",
     name: "Nexa Technologies Ltd",
@@ -387,43 +410,6 @@ let quotations: Quotation[] = [
     status: "Received",
   },
 ];
-export async function getSuppliers() {
-  await delay(350);
-  return suppliers;
-}
-export async function getSupplier(id: string) {
-  await delay(300);
-  const supplier = suppliers.find((item) => item.id === id);
-  if (!supplier) throw new Error("Supplier not found");
-  return supplier;
-}
-export async function createSupplier(input: CreateSupplierInput) {
-  await delay(600);
-  const supplier: Supplier = {
-    id: `SUP-${String(suppliers.length + 1).padStart(3, "0")}`,
-    name: input.name,
-    category: input.category,
-    contactName: input.contactName,
-    email: input.email,
-    phone: input.phone,
-    location: input.location,
-    status: "Under review",
-    rating: 0,
-    onTimeDelivery: 0,
-    qualityScore: 0,
-    totalOrders: 0,
-    totalSpend: 0,
-    complianceExpiry: "Pending review",
-    initials: input.name
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase(),
-  };
-  suppliers = [supplier, ...suppliers];
-  return supplier;
-}
 export async function getQuotations(requestId = "PR-2026-084") {
   await delay(400);
   return quotations.filter((item) => item.requestId === requestId);
@@ -1187,7 +1173,7 @@ export async function getSpendRecords() {
   await delay(350);
   return spendRecords;
 }
-export async function getAuditLogs() {
+export async function getAuditLogs(p0: string) {
   await delay(300);
   return auditLogs;
 }

@@ -24,7 +24,8 @@ const profileFor = async (authUser: SupabaseUser): Promise<User> => {
 
   return {
     ...profile,
-    id: authUser.id,
+    id: profile.id,
+    auth_user_id: authUser.id,
     name,
     email: profile.email || authUser.email || "",
     initials:

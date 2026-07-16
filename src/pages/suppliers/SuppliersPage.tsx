@@ -4,18 +4,21 @@ import { Building2, Plus, Search, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { createSupplier, getSuppliers } from "../api/api";
-import { supplierSchema, type SupplierFormValues } from "../schemas/supplier";
-import { compactMoney as money } from "../utils/currency";
+import { createSupplier, getSuppliers } from "../../api/suppliersApi";
+import { supplierSchema, type SupplierFormValues } from "../../schemas/supplier";
+import { useAppStore } from "../../store/store";
 export default function SuppliersPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const client = useQueryClient();
+  const user = useAppStore((state) => state.user);
+  const organizationId = user?.organization_id ?? "";
   const { data = [] } = useQuery({
-    queryKey: ["suppliers"],
-    queryFn: getSuppliers,
+    queryKey: ["suppliers", organizationId],
+    queryFn: () => getSuppliers(organizationId),
+    enabled: Boolean(organizationId),
   });
   const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierSchema),
@@ -31,7 +34,23 @@ export default function SuppliersPage() {
     },
   });
   const mutation = useMutation({
-    mutationFn: createSupplier,
+    mutationFn: (values: SupplierFormValues) => {
+      if (!user) throw new Error("You must be signed in to add a supplier");
+      return createSupplier(
+        {
+          organization_id: user.organization_id,
+          name: values.name,
+          category: values.category,
+          contact_name: values.contactName,
+          email: values.email,
+          phone: values.phone || null,
+          location: values.location || null,
+          tax_id: values.taxId || null,
+          payment_terms: values.paymentTerms || null,
+        },
+        user.id,
+      );
+    },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["suppliers"] });
       setOpen(false);
@@ -43,7 +62,7 @@ export default function SuppliersPage() {
       data.filter(
         (s) =>
           (status === "All" || s.status === status) &&
-          `${s.name} ${s.category} ${s.contactName}`
+          `${s.name} ${s.category} ${s.contact_name}`
             .toLowerCase()
             .includes(query.toLowerCase()),
       ),
@@ -69,27 +88,31 @@ export default function SuppliersPage() {
       <section className="supplier-stats">
         <article>
           <span>Active suppliers</span>
-          <strong>{data.filter((s) => s.status === "Active").length}</strong>
+          <strong>{data.filter((s) => s.status === "active").length}</strong>
           <small>Across 4 categories</small>
         </article>
         <article>
           <span>Average rating</span>
           <strong>
-            4.5 <Star size={16} />
+            {(data.reduce((sum, s) => sum + s.rating, 0) / data.length || 0).toFixed(2)}{" "}
+            <Star size={16} />
           </strong>
           <small>Top 20% performance</small>
         </article>
         <article>
           <span>Under review</span>
           <strong>
-            {data.filter((s) => s.status === "Under review").length}
+            {data.filter((s) => s.status === "under_review").length}
           </strong>
           <small>Awaiting compliance checks</small>
         </article>
         <article>
-          <span>Total supplier spend</span>
-          <strong>{money(data.reduce((a, s) => a + s.totalSpend, 0))}</strong>
-          <small>Current financial year</small>
+          <span>Average quality score</span>
+          <strong>
+            {(data.reduce((sum, s) => sum + s.quality_score_pct, 0) /
+              data.length || 0).toFixed(1)}%
+          </strong>
+          <small>Across all suppliers</small>
         </article>
       </section>
       <div className="request-toolbar supplier-toolbar">
@@ -102,13 +125,18 @@ export default function SuppliersPage() {
           />
         </label>
         <div className="segment">
-          {["All", "Active", "Under review", "Suspended"].map((value) => (
+          {[
+            ["All", "All"],
+            ["active", "Active"],
+            ["under_review", "Under review"],
+            ["suspended", "Suspended"],
+          ].map(([value, label]) => (
             <button
               className={status === value ? "selected" : ""}
               onClick={() => setStatus(value)}
               key={value}
             >
-              {value}
+              {label}
             </button>
           ))}
         </div>
@@ -122,9 +150,9 @@ export default function SuppliersPage() {
                 <th>Category</th>
                 <th>Status</th>
                 <th>Performance</th>
-                <th>Orders</th>
-                <th>Total spend</th>
-                <th>Compliance</th>
+                <th>Contact</th>
+                <th>Location</th>
+                <th>Quality</th>
               </tr>
             </thead>
             <tbody>
@@ -136,11 +164,11 @@ export default function SuppliersPage() {
                 >
                   <td>
                     <div className="supplier-name">
-                      <span>{s.initials}</span>
+                      <span>{initials(s.name)}</span>
                       <div>
                         <strong>{s.name}</strong>
                         <small>
-                          {s.contactName} · {s.location}
+                          {s.contact_name} · {s.location || "No location"}
                         </small>
                       </div>
                     </div>
@@ -148,21 +176,21 @@ export default function SuppliersPage() {
                   <td>{s.category}</td>
                   <td>
                     <span
-                      className={`supplier-status ${s.status.toLowerCase().replace(" ", "-")}`}
+                      className={`supplier-status ${s.status.replaceAll("_", "-")}`}
                     >
-                      {s.status}
+                      {displayStatus(s.status)}
                     </span>
                   </td>
                   <td>
                     <div className="rating">
                       <Star size={13} />
                       <strong>{s.rating || "—"}</strong>
-                      <small>{s.onTimeDelivery}% on time</small>
+                      <small>{s.on_time_delivery_pct}% on time</small>
                     </div>
                   </td>
-                  <td>{s.totalOrders}</td>
-                  <td className="amount">{money(s.totalSpend)}</td>
-                  <td>{s.complianceExpiry}</td>
+                  <td>{s.email}</td>
+                  <td>{s.location || "—"}</td>
+                  <td>{s.quality_score_pct}%</td>
                 </tr>
               ))}
             </tbody>
@@ -301,3 +329,16 @@ function ModalField({
     </label>
   );
 }
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+
+const displayStatus = (status: string) =>
+  status
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());

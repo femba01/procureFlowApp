@@ -8,22 +8,27 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { getAuditLogs, getSpendRecords } from "../api/api";
+import { getSpendRecords } from "../api/api";
 import type { SpendRecord } from "../types/finance";
 import { money } from "../utils/currency";
 import { csvCell, downloadCsv } from "../utils/csv";
+import { useAppStore } from "../store/store";
+import { getAuditLogs } from "../api/auditLogsApi";
+
 export default function ReportsPage() {
   const [tab, setTab] = useState<"spend" | "audit">("spend");
   const [query, setQuery] = useState("");
   const [department, setDepartment] = useState("All");
+  const {user} = useAppStore();
   const { data: spend = [] } = useQuery({
     queryKey: ["spend-records"],
     queryFn: getSpendRecords,
   });
-  const { data: logs = [] } = useQuery({
-    queryKey: ["audit-logs"],
-    queryFn: getAuditLogs,
-  });
+
+  const {data: auditLogs} = useQuery({
+      queryKey: ["auditLogs"],
+      queryFn: () => getAuditLogs(),
+    });
   const rows = useMemo(
     () =>
       spend.filter(
@@ -37,12 +42,12 @@ export default function ReportsPage() {
   );
   const audit = useMemo(
     () =>
-      logs.filter((log) =>
-        `${log.description} ${log.actor} ${log.entityId}`
+      auditLogs?.filter((log) =>
+        `${log.description} ${log.actor_id} ${log.entity_id}`
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
-    [logs, query],
+    [auditLogs, query],
   );
   const exportCsv = () => {
     const source = rows;
@@ -148,7 +153,7 @@ export default function ReportsPage() {
       {tab === "spend" ? (
         <SpendReport rows={rows} />
       ) : (
-        <AuditReport logs={audit} />
+        <AuditReport logs={auditLogs || []} />
       )}
     </>
   );
@@ -242,17 +247,17 @@ function AuditReport({
                 {log.action}
               </span>
               <strong>
-                {log.entityType} · {log.entityId}
+                {log.entity_type} · {log.entity_id}
               </strong>
             </div>
             <p>{log.description}</p>
-            <small>
-              {log.actor} · {log.role}
-            </small>
+            {/* <small>
+              {log.actor_id} · {log.role}
+            </small> */}
           </div>
           <div className="audit-meta">
-            <span>{log.createdAt}</span>
-            {log.metadata && <small>{log.metadata}</small>}
+            <span>{log.created_at}</span>
+            {/* {log.metadata && <small>{log.metadata}</small>} */}
           </div>
         </div>
       ))}

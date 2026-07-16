@@ -21,7 +21,9 @@ import {
 import { getDashboard } from "../api/api";
 import StatusBadge from "../components/StatusBadge";
 import { money } from "../utils/currency";
-import { useGetProfile } from "../hooks/useGetProfile";
+import { getPurchaseRequests } from "../api/requestsApi";
+import { useAppStore } from "../store/store";
+import { DateTimeFormat } from "../utils/datetimeFormat";
 
 export default function DashboardPage() {
   const { data, isLoading } = useQuery({
@@ -29,7 +31,12 @@ export default function DashboardPage() {
     queryFn: getDashboard,
   });
 
-  const { profile } = useGetProfile();
+  const { user } = useAppStore();
+
+  const {data: purchaseRequests} = useQuery({
+    queryKey: ["purchaseRequests"],
+    queryFn: () => getPurchaseRequests(user?.organization_id || ""),
+  });
 
   if (isLoading) return <DashboardSkeleton />;
 
@@ -72,7 +79,7 @@ export default function DashboardPage() {
     <>
       <section className="welcome">
         <div>
-          <h2>Good afternoon, {profile?.name}</h2>
+          <h2>Good afternoon, {user?.name}</h2>
           <p>Here's what's happening with procurement today.</p>
         </div>
         <Link className="primary-button" to="/requests">
@@ -189,16 +196,16 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {data.requests.slice(0, 4).map((r) => (
+              {purchaseRequests && purchaseRequests.slice(0, 4).map((r) => (
                 <tr key={r.id}>
                   <td>
                     <strong>{r.title}</strong>
-                    <small>
-                      {r.id} · {r.items} items
-                    </small>
+                    {/* <small>
+                      {r.id} · {r.items.length} items
+                    </small> */}
                   </td>
                   <td>{r.department}</td>
-                  <td className="amount">{money(r.amount)}</td>
+                  <td className="amount">{money(r.estimated_total)}</td>
                   <td>
                     <StatusBadge status={r.status} />
                   </td>
@@ -207,7 +214,7 @@ export default function DashboardPage() {
                       {r.priority}
                     </span>
                   </td>
-                  <td>{r.createdAt}</td>
+                  <td>{DateTimeFormat(r.created_at, { dateStyle: "long" })}</td>
                 </tr>
               ))}
             </tbody>

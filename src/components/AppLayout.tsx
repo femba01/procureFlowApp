@@ -17,9 +17,10 @@ import {
 import { useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAppStore } from "../store/store";
-import { hasPermission, type Permission } from "../store/permissions";
+import { hasPermission, type Permission } from "../types/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganisationSettings } from "../api/organizationsApi";
+import { getPurchaseRequests } from "../api/requestsApi";
 
 const nav = [
   ["Overview", "/dashboard", LayoutDashboard, "dashboard:view"],
@@ -38,6 +39,11 @@ export default function AppLayout() {
   const [logoutError, setLogoutError] = useState("");
   const location = useLocation();
   const page = nav.find((n) => n[1] === location.pathname)?.[0] ?? "Workspace";
+
+  const {data: purchaseRequests} = useQuery({
+        queryKey: ["purchaseRequests"],
+        queryFn: () => getPurchaseRequests(user?.organization_id || "", user?.role == "Department Manager" ? user?.department_id : undefined, user?.role == "Employee" ? user?.id : undefined),
+      });
 
   const { data: organization, isLoading } = useQuery({
     queryKey: ["organizationSettings"],
@@ -89,7 +95,7 @@ export default function AppLayout() {
             <X />
           </button>
         </div>
-        <div className="workspace">
+        <div className="workspace !py-2">
           <div className="workspace-logo">AC</div>
           <div>
             <strong>{organization?.companyName || "Acme Corporation"}</strong>
@@ -111,7 +117,7 @@ export default function AppLayout() {
               >
                 <Icon size={19} />
                 <span>{label}</span>
-                {label === "Requests" && <b>12</b>}
+                {label === "Requests" && <b>{purchaseRequests?.length || 0}</b>}
               </NavLink>
             ))}
         </nav>

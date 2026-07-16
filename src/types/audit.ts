@@ -25,3 +25,23 @@ export interface AuditLog {
   createdAt: string;
   metadata?: string;
 }
+
+export interface AuditLogRecord {
+  id: string;
+  organization_id: string;
+  actor_id: string | null;
+  action: AuditAction;
+  entity_type: 
+    | "Purchase request"
+    | "Supplier"
+    | "Quotation"
+    | "Purchase order"
+    | "Goods receipt"
+    | "Inventory";
+  entity_id: string | null;
+  description: string;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export type CreateAuditLogInput = Omit<AuditLogRecord, "id" | "created_at">;

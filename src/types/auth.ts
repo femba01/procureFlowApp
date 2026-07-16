@@ -12,6 +12,6 @@ export interface User {
   role: Role;
   department_id: string;
   organization_id: string;
-  user_id: string;
+  auth_user_id: string;
   initials: string;
 }
