@@ -1,30 +1,49 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CalendarDays, Plus, Save, Trash2 } from "lucide-react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { createRequest } from "../../api/api";
+import { getDepartments } from "../../api/departmentsApi";
+import { createPurchaseRequest } from "../../api/requestsApi";
+import { getSupplierOptions } from "../../api/suppliersApi";
 import FormField from "../../components/FormField";
 import { requestSchema, type RequestFormValues } from "../../schemas/request";
 import { money } from "../../utils/currency";
+import { useAppStore } from "../../store/store";
+import { useEffect } from "react";
 
 export default function NewRequestPage() {
   const navigate = useNavigate();
   const client = useQueryClient();
+  const user = useAppStore((state) => state.user);
+  const organizationId = user?.organization_id ?? "";
+  const { data: departments = [] } = useQuery({
+    queryKey: ["departments", organizationId],
+    queryFn: () => getDepartments(organizationId),
+    enabled: Boolean(organizationId),
+  });
+  const { data: suppliers = [] } = useQuery({
+    queryKey: ["request-suppliers", organizationId],
+    queryFn: () => getSupplierOptions(organizationId),
+    enabled: Boolean(organizationId),
+  });
   const {
     register,
     control,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<RequestFormValues>({
     resolver: zodResolver(requestSchema),
     defaultValues: {
       title: "",
+      departmentId: user?.department_id ?? "",
       department: "",
-      priority: "Medium",
+      requester: user?.name ?? "None",
+      priority: "medium",
       neededBy: "",
       costCentre: "",
-      vendorPreference: "",
+      preferredSupplierId: "",
       businessReason: "",
       lineItems: [{ description: "", category: "", quantity: 1, unitPrice: 0 }],
     },
@@ -34,19 +53,38 @@ export default function NewRequestPage() {
     name: "lineItems",
   });
   const items = useWatch({ control, name: "lineItems" });
+  const departmentId = useWatch({ control, name: "departmentId" });
+
+  useEffect(() => {
+    if(departmentId && departments.length > 0) {
+      const selectedDepartment = departments.find(d => d.id === departmentId);
+      if(selectedDepartment) {
+        setValue("department", selectedDepartment.name);
+      }
+    }
+  }, [departmentId, departments, control]);
+
   const total = items.reduce(
     (sum, item) =>
       sum + (Number(item.quantity) || 0) * (Number(item.unitPrice) || 0),
     0,
   );
   const mutation = useMutation({
-    mutationFn: createRequest,
-    onSuccess: (request) => {
-      client.invalidateQueries({ queryKey: ["requests"] });
+    mutationFn: (values: RequestFormValues) => {
+      if (!user) throw new Error("You must be signed in to create a request");
+      return createPurchaseRequest({
+        ...values,
+        organizationId: user.organization_id,
+        requesterId: user.id,
+      });
+    },
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: ["purchaseRequests"] });
       client.invalidateQueries({ queryKey: ["dashboard"] });
-      navigate(`/requests/${request.id}`);
+      navigate("/requests");
     },
   });
+  
   return (
     <div className="form-page">
       <div className="back-row">
@@ -86,23 +124,22 @@ export default function NewRequestPage() {
                 </FormField>
                 <FormField
                   label="Department"
-                  error={errors.department?.message}
+                  error={errors.departmentId?.message}
                 >
-                  <select {...register("department")}>
+                  <select {...register("departmentId")}>
                     <option value="">Select department</option>
-                    <option>Technology</option>
-                    <option>Operations</option>
-                    <option>Marketing</option>
-                    <option>Facilities</option>
-                    <option>People</option>
-                    <option>Finance</option>
+                    {departments.map((department) => (
+                      <option key={department.id} value={department.id}>
+                        {department.name}
+                      </option>
+                    ))}
                   </select>
                 </FormField>
                 <FormField label="Priority" error={errors.priority?.message}>
                   <select {...register("priority")}>
-                    <option>Low</option>
-                    <option>Medium</option>
-                    <option>High</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
                   </select>
                 </FormField>
                 <FormField label="Needed by" error={errors.neededBy?.message}>
@@ -122,13 +159,17 @@ export default function NewRequestPage() {
                 </FormField>
                 <FormField
                   label="Preferred vendor (optional)"
-                  error={errors.vendorPreference?.message}
+                  error={errors.preferredSupplierId?.message}
                   wide
                 >
-                  <input
-                    {...register("vendorPreference")}
-                    placeholder="Enter an approved supplier or leave blank"
-                  />
+                  <select {...register("preferredSupplierId")}>
+                    <option value="">No preferred supplier</option>
+                    {suppliers.map((supplier) => (
+                      <option key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </option>
+                    ))}
+                  </select>
                 </FormField>
                 <FormField
                   label="Business justification"
@@ -274,7 +315,7 @@ export default function NewRequestPage() {
             </button>
             {mutation.isError && (
               <p className="mutation-error">
-                Request could not be submitted. Try again.
+                {mutation.error.message}
               </p>
             )}
             <button type="button" className="draft-button">

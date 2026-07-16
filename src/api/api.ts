@@ -21,7 +21,6 @@ import type {
   RequestStatus,
 } from "../types/requests";
 import type { OrganisationSettings } from "../types/settings";
-import type { CreateSupplierInput, Supplier } from "../types/suppliers";
 import supabase from "./supabase";
 let requests: PurchaseRequest[] = [
   {
@@ -274,7 +273,7 @@ export async function updateRequestStatus({
   return updated;
 }
 
-let suppliers: Supplier[] = [
+export const legacySuppliers = [
   {
     id: "SUP-001",
     name: "Nexa Technologies Ltd",
@@ -411,43 +410,6 @@ let quotations: Quotation[] = [
     status: "Received",
   },
 ];
-export async function getSuppliers() {
-  await delay(350);
-  return suppliers;
-}
-export async function getSupplier(id: string) {
-  await delay(300);
-  const supplier = suppliers.find((item) => item.id === id);
-  if (!supplier) throw new Error("Supplier not found");
-  return supplier;
-}
-export async function createSupplier(input: CreateSupplierInput) {
-  await delay(600);
-  const supplier: Supplier = {
-    id: `SUP-${String(suppliers.length + 1).padStart(3, "0")}`,
-    name: input.name,
-    category: input.category,
-    contactName: input.contactName,
-    email: input.email,
-    phone: input.phone,
-    location: input.location,
-    status: "Under review",
-    rating: 0,
-    onTimeDelivery: 0,
-    qualityScore: 0,
-    totalOrders: 0,
-    totalSpend: 0,
-    complianceExpiry: "Pending review",
-    initials: input.name
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase(),
-  };
-  suppliers = [supplier, ...suppliers];
-  return supplier;
-}
 export async function getQuotations(requestId = "PR-2026-084") {
   await delay(400);
   return quotations.filter((item) => item.requestId === requestId);
