@@ -18,7 +18,7 @@ export default function RequestsPage() {
 
   const { data: purchaseRequests } = useQuery({
     queryKey: ["purchaseRequests"],
-    queryFn: () => getPurchaseRequests(user?.organization_id || ""),
+    queryFn: () => getPurchaseRequests(user?.organization_id || "", user?.role == "Department Manager" ? user?.department_id : undefined, user?.role == "Employee" ? user?.id : undefined),
   });
 
   const rows = useMemo(

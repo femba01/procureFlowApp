@@ -36,17 +36,20 @@ export default function SuppliersPage() {
   const mutation = useMutation({
     mutationFn: (values: SupplierFormValues) => {
       if (!user) throw new Error("You must be signed in to add a supplier");
-      return createSupplier({
-        organization_id: user.organization_id,
-        name: values.name,
-        category: values.category,
-        contact_name: values.contactName,
-        email: values.email,
-        phone: values.phone || null,
-        location: values.location || null,
-        tax_id: values.taxId || null,
-        payment_terms: values.paymentTerms || null,
-      });
+      return createSupplier(
+        {
+          organization_id: user.organization_id,
+          name: values.name,
+          category: values.category,
+          contact_name: values.contactName,
+          email: values.email,
+          phone: values.phone || null,
+          location: values.location || null,
+          tax_id: values.taxId || null,
+          payment_terms: values.paymentTerms || null,
+        },
+        user.id,
+      );
     },
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["suppliers"] });

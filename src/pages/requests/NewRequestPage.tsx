@@ -102,7 +102,7 @@ export default function NewRequestPage() {
       </section>
       <form onSubmit={handleSubmit((data) => mutation.mutate(data))}>
         <div className="form-layout">
-          <div className="form-main">
+          <div className="form-main col-span-2 md:col-span-1">
             <section className="panel form-section">
               <div className="section-heading">
                 <span>1</span>

@@ -42,7 +42,7 @@ export default function AppLayout() {
 
   const {data: purchaseRequests} = useQuery({
         queryKey: ["purchaseRequests"],
-        queryFn: () => getPurchaseRequests(user?.organization_id || ""),
+        queryFn: () => getPurchaseRequests(user?.organization_id || "", user?.role == "Department Manager" ? user?.department_id : undefined, user?.role == "Employee" ? user?.id : undefined),
       });
 
   const { data: organization, isLoading } = useQuery({
@@ -95,7 +95,7 @@ export default function AppLayout() {
             <X />
           </button>
         </div>
-        <div className="workspace">
+        <div className="workspace !py-2">
           <div className="workspace-logo">AC</div>
           <div>
             <strong>{organization?.companyName || "Acme Corporation"}</strong>

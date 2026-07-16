@@ -1173,7 +1173,7 @@ export async function getSpendRecords() {
   await delay(350);
   return spendRecords;
 }
-export async function getAuditLogs() {
+export async function getAuditLogs(p0: string) {
   await delay(300);
   return auditLogs;
 }
