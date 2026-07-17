@@ -4,16 +4,20 @@ import {
   CheckCircle2,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   ShieldCheck,
   Star,
 } from "lucide-react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getSupplierById } from "../../api/suppliersApi";
 import DetailField from "../../components/DetailField";
+import SupplierFormModal from "../../components/SupplierFormModal";
 import SupplierScore from "../../components/SupplierScore";
 export default function SupplierDetailsPage() {
   const { supplierId = "" } = useParams();
+  const [editing, setEditing] = useState(false);
   const { data, isLoading } = useQuery({
     queryKey: ["supplier", supplierId],
     queryFn: () => getSupplierById(supplierId),
@@ -56,7 +60,10 @@ export default function SupplierDetailsPage() {
             </span>
           </div>
         </div>
-        <button className="secondary-button">Edit supplier</button>
+        <button className="secondary-button" onClick={() => setEditing(true)}>
+          <Pencil size={17} />
+          Edit supplier
+        </button>
       </section>
       <section className="performance-grid">
         <SupplierScore
@@ -124,6 +131,12 @@ export default function SupplierDetailsPage() {
           ))}
         </section>
       </div>
+      {editing && (
+        <SupplierFormModal
+          supplier={data}
+          onClose={() => setEditing(false)}
+        />
+      )}
     </>
   );
 }

@@ -8,6 +8,12 @@ export interface CreatePurchaseRequestInput extends RequestFormValues {
   requesterId: string;
 }
 
+export interface UpdatePurchaseRequestInput extends RequestFormValues {
+  id: string;
+  organizationId: string;
+  actorId: string;
+}
+
 export interface RequestItemRecord {
   id: string;
   request_id: string;
@@ -192,6 +198,142 @@ export const createPurchaseRequest = async ({
   } catch (auditError) {
     // request_items are removed by the purchase_requests ON DELETE CASCADE rule.
     await supabase.from("purchase_requests").delete().eq("id", request.id);
+    throw auditError;
+  }
+
+  return { ...request, items };
+};
+
+export const updatePurchaseRequest = async ({
+  id,
+  organizationId,
+  actorId,
+  departmentId,
+  department,
+  requester,
+  title,
+  businessReason,
+  priority,
+  neededBy,
+  costCentre,
+  preferredSupplierId,
+  lineItems,
+}: UpdatePurchaseRequestInput) => {
+  const { data: originalRequest, error: originalRequestError } = await supabase
+    .from("purchase_requests")
+    .select("*")
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .single();
+
+  if (originalRequestError) throw new Error(originalRequestError.message);
+
+  const { data: originalItems, error: originalItemsError } = await supabase
+    .from("request_items")
+    .select("description, category, quantity, unit_price")
+    .eq("request_id", id);
+
+  if (originalItemsError) throw new Error(originalItemsError.message);
+
+  const estimatedTotal = lineItems.reduce(
+    (total, item) => total + item.quantity * item.unitPrice,
+    0,
+  );
+
+  const restoreOriginal = async () => {
+    await supabase
+      .from("purchase_requests")
+      .update({
+        department_id: originalRequest.department_id,
+        department: originalRequest.department,
+        requester: originalRequest.requester,
+        title: originalRequest.title,
+        business_reason: originalRequest.business_reason,
+        priority: originalRequest.priority,
+        needed_by: originalRequest.needed_by,
+        cost_centre: originalRequest.cost_centre,
+        preferred_supplier_id: originalRequest.preferred_supplier_id,
+        estimated_total: originalRequest.estimated_total,
+      })
+      .eq("id", id);
+    await supabase.from("request_items").delete().eq("request_id", id);
+    if (originalItems.length > 0) {
+      await supabase.from("request_items").insert(
+        originalItems.map((item) => ({
+          request_id: id,
+          ...item,
+        })),
+      );
+    }
+  };
+
+  const { data: request, error: requestError } = await supabase
+    .from("purchase_requests")
+    .update({
+      department_id: departmentId,
+      department,
+      requester,
+      title,
+      business_reason: businessReason,
+      priority,
+      needed_by: neededBy,
+      cost_centre: costCentre,
+      preferred_supplier_id: preferredSupplierId || null,
+      estimated_total: estimatedTotal,
+    })
+    .eq("id", id)
+    .eq("organization_id", organizationId)
+    .select("*")
+    .single();
+
+  if (requestError) throw new Error(requestError.message);
+
+  const { error: deleteItemsError } = await supabase
+    .from("request_items")
+    .delete()
+    .eq("request_id", id);
+
+  if (deleteItemsError) {
+    await restoreOriginal();
+    throw new Error(deleteItemsError.message);
+  }
+
+  const { data: items, error: itemsError } = await supabase
+    .from("request_items")
+    .insert(
+      lineItems.map((item) => ({
+        request_id: id,
+        description: item.description,
+        category: item.category,
+        quantity: item.quantity,
+        unit_price: item.unitPrice,
+      })),
+    )
+    .select("*");
+
+  if (itemsError) {
+    await restoreOriginal();
+    throw new Error(itemsError.message);
+  }
+
+  try {
+    await createAuditLog({
+      organization_id: organizationId,
+      actor_id: actorId,
+      action: "Updated",
+      entity_type: "Purchase request",
+      entity_id: id,
+      description: `Purchase request ${request.request_number} was updated.`,
+      metadata: {
+        request_number: request.request_number,
+        title,
+        item_count: lineItems.length,
+        estimated_total: estimatedTotal,
+        priority,
+      },
+    });
+  } catch (auditError) {
+    await restoreOriginal();
     throw auditError;
   }
 

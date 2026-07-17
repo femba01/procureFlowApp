@@ -74,6 +74,10 @@ export default function App() {
                 element={secure("requests:create", <NewRequestPage />)}
               />
               <Route
+                path="/requests/:requestId/edit"
+                element={secure("requests:create", <NewRequestPage />)}
+              />
+              <Route
                 path="/requests/:requestId"
                 element={secure("requests:view", <RequestDetailsPage />)}
               />

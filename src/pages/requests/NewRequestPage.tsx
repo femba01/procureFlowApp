@@ -2,9 +2,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, CalendarDays, Plus, Save, Trash2 } from "lucide-react";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getDepartments } from "../../api/departmentsApi";
-import { createPurchaseRequest } from "../../api/requestsApi";
+import {
+  createPurchaseRequest,
+  getPurchaseRequestDetails,
+  updatePurchaseRequest,
+} from "../../api/requestsApi";
 import { getSupplierOptions } from "../../api/suppliersApi";
 import FormField from "../../components/FormField";
 import { requestSchema, type RequestFormValues } from "../../schemas/request";
@@ -14,6 +18,8 @@ import { useEffect } from "react";
 
 export default function NewRequestPage() {
   const navigate = useNavigate();
+  const { requestId } = useParams();
+  const isEditing = Boolean(requestId);
   const client = useQueryClient();
   const user = useAppStore((state) => state.user);
   const organizationId = user?.organization_id ?? "";
@@ -27,10 +33,16 @@ export default function NewRequestPage() {
     queryFn: () => getSupplierOptions(organizationId),
     enabled: Boolean(organizationId),
   });
+  const { data: existingRequest, isLoading: isLoadingRequest } = useQuery({
+    queryKey: ["request", requestId],
+    queryFn: () => getPurchaseRequestDetails(requestId!),
+    enabled: isEditing,
+  });
   const {
     register,
     control,
     setValue,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<RequestFormValues>({
@@ -62,7 +74,42 @@ export default function NewRequestPage() {
         setValue("department", selectedDepartment.name);
       }
     }
-  }, [departmentId, departments, control]);
+  }, [departmentId, departments, setValue]);
+
+  useEffect(() => {
+    if (!existingRequest) return;
+
+    reset({
+      title: existingRequest.title,
+      departmentId: existingRequest.department_id,
+      department:
+        existingRequest.department_record?.name ||
+        existingRequest.department ||
+        "",
+      requester:
+        existingRequest.requester_profile?.name ||
+        existingRequest.requester ||
+        user?.name ||
+        "",
+      priority: existingRequest.priority.toLowerCase() as
+        | "low"
+        | "medium"
+        | "high",
+      neededBy: existingRequest.needed_by.slice(0, 10),
+      costCentre: existingRequest.cost_centre,
+      preferredSupplierId: existingRequest.preferred_supplier_id || "",
+      businessReason: existingRequest.business_reason,
+      lineItems:
+        existingRequest.request_items.length > 0
+          ? existingRequest.request_items.map((item) => ({
+              description: item.description,
+              category: item.category,
+              quantity: item.quantity,
+              unitPrice: item.unit_price,
+            }))
+          : [{ description: "", category: "", quantity: 1, unitPrice: 0 }],
+    });
+  }, [existingRequest, reset, user?.name]);
 
   const total = items.reduce(
     (sum, item) =>
@@ -71,7 +118,15 @@ export default function NewRequestPage() {
   );
   const mutation = useMutation({
     mutationFn: (values: RequestFormValues) => {
-      if (!user) throw new Error("You must be signed in to create a request");
+      if (!user) throw new Error("You must be signed in to save a request");
+      if (requestId) {
+        return updatePurchaseRequest({
+          ...values,
+          id: requestId,
+          organizationId: user.organization_id,
+          actorId: user.id,
+        });
+      }
       return createPurchaseRequest({
         ...values,
         organizationId: user.organization_id,
@@ -81,22 +136,25 @@ export default function NewRequestPage() {
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ["purchaseRequests"] });
       client.invalidateQueries({ queryKey: ["dashboard"] });
-      navigate("/requests");
+      client.invalidateQueries({ queryKey: ["request", requestId] });
+      navigate(requestId ? `/requests/${requestId}` : "/requests");
     },
   });
+
+  if (isEditing && isLoadingRequest) return <div className="detail-loading" />;
   
   return (
     <div className="form-page">
       <div className="back-row">
-        <Link to="/requests">
+        <Link to={requestId ? `/requests/${requestId}` : "/requests"}>
           <ArrowLeft size={17} />
-          Back to requests
+          {isEditing ? "Back to request" : "Back to requests"}
         </Link>
         <span>Draft saved automatically</span>
       </div>
       <section className="welcome">
         <div>
-          <h2>Create purchase request</h2>
+          <h2>{isEditing ? "Edit purchase request" : "Create purchase request"}</h2>
           <p>Provide the business need and add every item required.</p>
         </div>
       </section>
@@ -311,16 +369,22 @@ export default function NewRequestPage() {
               disabled={mutation.isPending}
             >
               <Save size={17} />
-              {mutation.isPending ? "Submitting..." : "Submit for approval"}
+              {mutation.isPending
+                ? "Saving..."
+                : isEditing
+                  ? "Save changes"
+                  : "Submit for approval"}
             </button>
             {mutation.isError && (
               <p className="mutation-error">
                 {mutation.error.message}
               </p>
             )}
-            <button type="button" className="draft-button">
-              Save as draft
-            </button>
+            {!isEditing && (
+              <button type="button" className="draft-button">
+                Save as draft
+              </button>
+            )}
           </aside>
         </div>
       </form>
