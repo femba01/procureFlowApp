@@ -17,7 +17,8 @@ export interface AuditLog {
     | "Quotation"
     | "Purchase order"
     | "Goods receipt"
-    | "Inventory";
+    | "Inventory"
+    | "Warehouse";
   entityId: string;
   description: string;
   actor: string;
@@ -37,7 +38,8 @@ export interface AuditLogRecord {
     | "Quotation"
     | "Purchase order"
     | "Goods receipt"
-    | "Inventory";
+    | "Inventory"
+    | "Warehouse";
   entity_id: string | null;
   description: string;
   metadata: Record<string, unknown> | null;

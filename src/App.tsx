@@ -16,6 +16,7 @@ const OrdersPage = lazy(() => import("./pages/orders/OrdersPage"));
 const OrderDetailsPage = lazy(() => import("./pages/orders/OrderDetailsPage"));
 const GenerateOrderPage = lazy(() => import("./pages/orders/GenerateOrderPage"));
 const InventoryPage = lazy(() => import("./pages/inventories/InventoryPage"));
+const NewInventoryPage = lazy(() => import("./pages/inventories/NewInventoryPage"));
 const InventoryDetailsPage = lazy(() => import("./pages/inventories/InventoryDetailsPage"));
 const BudgetsPage = lazy(() => import("./pages/BudgetsPage"));
 const ReportsPage = lazy(() => import("./pages/ReportsPage"));
@@ -108,6 +109,10 @@ export default function App() {
               <Route
                 path="/inventory"
                 element={secure("inventory:manage", <InventoryPage />)}
+              />
+              <Route
+                path="/inventory/new"
+                element={secure("inventory:manage", <NewInventoryPage />)}
               />
               <Route
                 path="/inventory/:itemId"
