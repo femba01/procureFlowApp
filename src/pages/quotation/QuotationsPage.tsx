@@ -8,8 +8,8 @@ import {
   Truck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getQuotations, selectQuotation } from "../api/api";
-import { money } from "../utils/currency";
+import { getQuotations, selectQuotation } from "../../api/api";
+import { money } from "../../utils/currency";
 export default function QuotationsPage() {
   const client = useQueryClient();
   const { data = [] } = useQuery({

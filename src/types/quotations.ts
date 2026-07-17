@@ -1,3 +1,5 @@
+export type Quotation_invitation_status = 'pending' | 'opened' | 'submitted' | 'expired' | 'revoked';
+
 export interface Quotation {
   id: string;
   supplierId: string;

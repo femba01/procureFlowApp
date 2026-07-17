@@ -7,12 +7,6 @@ import type {
   StockMovement,
   Warehouse,
 } from "../types/inventory";
-import type {
-  CreateOrderInput,
-  CreateReceiptInput,
-  GoodsReceipt,
-  PurchaseOrder,
-} from "../types/orders";
 import type { Quotation } from "../types/quotations";
 import type {
   CreateRequestInput,
@@ -25,10 +19,9 @@ import supabase from "./supabase";
 let requests: PurchaseRequest[] = [
   {
     id: "PR-2026-084",
-    reference: "PR-2026-084",
-    requesterId: "",
-    organizationId: "",
-    departmentId: "",
+    requester_id: "",
+    organization_id: "",
+    department_id: "",
     title: "Engineering laptops",
     department: "Technology",
     requester: "Tunde Lawson",
@@ -36,14 +29,12 @@ let requests: PurchaseRequest[] = [
     status: "Pending approval",
     priority: "High",
     createdAt: "09 Jul 2026",
-    items: 8,
   },
   {
     id: "PR-2026-083",
-    reference: "PR-2026-083",
-    requesterId: "",
-    organizationId: "",
-    departmentId: "",
+    requester_id: "",
+    organization_id: "",
+    department_id: "",
     title: "Office stationery restock",
     department: "Operations",
     requester: "Amaka Okafor",
@@ -51,14 +42,12 @@ let requests: PurchaseRequest[] = [
     status: "In procurement",
     priority: "Medium",
     createdAt: "08 Jul 2026",
-    items: 24,
   },
   {
     id: "PR-2026-082",
-    reference: "PR-2026-082",
-    requesterId: "",
-    organizationId: "",
-    departmentId: "",
+    requester_id: "",
+    organization_id: "",
+    department_id: "",
     title: "Marketing campaign assets",
     department: "Marketing",
     requester: "David Mensah",
@@ -66,14 +55,12 @@ let requests: PurchaseRequest[] = [
     status: "Approved",
     priority: "Medium",
     createdAt: "07 Jul 2026",
-    items: 5,
   },
   {
     id: "PR-2026-081",
-    reference: "PR-2026-081",
-    requesterId: "",
-    organizationId: "",
-    departmentId: "",
+    requester_id: "",
+    organization_id: "",
+    department_id: "",
     title: "Safety equipment",
     department: "Facilities",
     requester: "Sarah Ibrahim",
@@ -81,14 +68,12 @@ let requests: PurchaseRequest[] = [
     status: "Completed",
     priority: "High",
     createdAt: "05 Jul 2026",
-    items: 12,
   },
   {
     id: "PR-2026-080",
-    reference: "PR-2026-080",
-    requesterId: "",
-    organizationId: "",
-    departmentId: "",
+    requester_id: "",
+    organization_id: "",
+    department_id: "",
     title: "Team training subscription",
     department: "People",
     requester: "Bola James",
@@ -96,7 +81,6 @@ let requests: PurchaseRequest[] = [
     status: "Rejected",
     priority: "Low",
     createdAt: "03 Jul 2026",
-    items: 1,
   },
 ];
 const details = new Map<string, PurchaseRequestDetails>();
@@ -196,18 +180,20 @@ export async function createRequest(input: CreateRequestInput) {
   }).format(new Date());
   const request: PurchaseRequest = {
     id,
-    reference: id,
-    requesterId: "",
-    organizationId: "",
-    departmentId: input.departmentId,
+    requester_id: "",
+    organization_id: "",
+    department_id: input.department_id,
     title: input.title,
-    department: input.departmentId,
+    department: input.department_id,
     requester: "Muideen Adeogun",
-    amount,
+    estimated_total: amount,
     status: "Pending approval",
     priority: input.priority,
-    createdAt,
-    items: input.lineItems.reduce((sum, item) => sum + item.quantity, 0),
+    created_at: createdAt,
+    request_number: "",
+    needed_by: null,
+    cost_centre: "",
+    items: []
   };
   const value: PurchaseRequestDetails = {
     ...request,
@@ -1173,7 +1159,7 @@ export async function getSpendRecords() {
   await delay(350);
   return spendRecords;
 }
-export async function getAuditLogs(p0: string) {
+export async function getAuditLogs() {
   await delay(300);
   return auditLogs;
 }
