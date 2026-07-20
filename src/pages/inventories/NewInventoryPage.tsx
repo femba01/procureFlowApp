@@ -103,7 +103,7 @@ export default function NewInventoryPage() {
                     </select>
                     <button
                       type="button"
-                      className="secondary-button"
+                      className="secondary-button text-nowrap"
                       onClick={() => setWarehouseModalOpen(true)}
                     >
                       <Plus size={16} />

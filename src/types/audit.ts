@@ -18,7 +18,9 @@ export interface AuditLog {
     | "Purchase order"
     | "Goods receipt"
     | "Inventory"
-    | "Warehouse";
+    | "Warehouse"
+    | "Department budget"
+    | "Quotation invitation";
   entityId: string;
   description: string;
   actor: string;
@@ -39,11 +41,21 @@ export interface AuditLogRecord {
     | "Purchase order"
     | "Goods receipt"
     | "Inventory"
-    | "Warehouse";
+    | "Warehouse"
+    | "Department budget"
+    | "Quotation invitation";
   entity_id: string | null;
   description: string;
   metadata: Record<string, unknown> | null;
   created_at: string;
+  actor: {
+    name: string;
+    email: string | null;
+    role: string | null;
+  } | null;
 }
 
-export type CreateAuditLogInput = Omit<AuditLogRecord, "id" | "created_at">;
+export type CreateAuditLogInput = Omit<
+  AuditLogRecord,
+  "id" | "created_at" | "actor"
+>;

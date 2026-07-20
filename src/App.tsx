@@ -12,6 +12,9 @@ const RequestsPage = lazy(() => import("./pages/requests/RequestsPage"));
 const SuppliersPage = lazy(() => import("./pages/suppliers/SuppliersPage"));
 const SupplierDetailsPage = lazy(() => import("./pages/suppliers/SupplierDetailsPage"));
 const QuotationsPage = lazy(() => import("./pages/quotation/QuotationsPage"));
+const SupplierQuotationPage = lazy(
+  () => import("./pages/quotation/SupplierQuotationPage"),
+);
 const OrdersPage = lazy(() => import("./pages/orders/OrdersPage"));
 const OrderDetailsPage = lazy(() => import("./pages/orders/OrderDetailsPage"));
 const GenerateOrderPage = lazy(() => import("./pages/orders/GenerateOrderPage"));
@@ -53,6 +56,7 @@ export default function App() {
       }
     >
       <Routes>
+        <Route path="/supplier/quotation" element={<SupplierQuotationPage />} />
         {!user ? (
           <>
             <Route path="/login" element={<LoginPage />} />

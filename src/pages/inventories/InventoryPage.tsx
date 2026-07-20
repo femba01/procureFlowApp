@@ -157,7 +157,7 @@ export default function InventoryPage() {
           ) : (
             <table>
               <thead>
-                <tr>
+                <tr className="text-nowrap">
                   <th>Inventory item</th><th>Warehouse</th><th>Available</th>
                   <th>Reserved</th><th>Reorder level</th><th>Status</th>
                   <th>Stock value</th><th>Updated</th>
@@ -180,15 +180,15 @@ export default function InventoryPage() {
                       </div>
                     </td>
                     <td>{item.warehouse?.name || "Unknown warehouse"}</td>
-                    <td>
+                    <td className="text-nowrap">
                       <strong>{item.quantity - item.reserved_quantity}</strong>
-                      <small>{item.quantity} on hand</small>
+                      <small className="text-nowrap">{item.quantity} on hand</small>
                     </td>
                     <td>{item.reserved_quantity}</td>
                     <td>{item.reorder_level}</td>
                     <td><StockBadge status={displayStatus(item.status)} /></td>
                     <td className="amount">{money(item.quantity * item.unit_cost)}</td>
-                    <td>
+                    <td className="text-nowrap">
                       {DateTimeFormat(item.updated_at, { dateStyle: "medium" }, "Date")}
                     </td>
                   </tr>
