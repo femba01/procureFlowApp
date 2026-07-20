@@ -1,13 +1,12 @@
 export interface DepartmentBudget {
   id: string;
-  department: string;
-  owner: string;
+  department_id: string;
+  period: string;
   allocated: number;
   committed: number;
   spent: number;
-  period: string;
-  status: "Healthy" | "Watch" | "Critical";
-  monthly: { month: string; actual: number; plan: number }[];
+  status: "healthy" | "watch" | "critical";
+  created_at: string;
 }
 
 export interface SpendRecord {

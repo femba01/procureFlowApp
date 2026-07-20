@@ -8,3 +8,19 @@ export const getProfiles = async (userId: string) => {
     }
     return data as User;
 }
+
+export interface ProfileOption {
+  id: string;
+  name: string;
+}
+
+export const getOrganizationProfileOptions = async (organizationId: string) => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, name")
+    .eq("organization_id", organizationId)
+    .order("name");
+
+  if (error) throw new Error(error.message);
+  return data as ProfileOption[];
+};

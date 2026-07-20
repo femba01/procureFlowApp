@@ -8,22 +8,38 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrders } from "../../api/api";
+import { getPurchaseOrders } from "../../api/purchaseOrdersApi";
 import OrderStatus from "../../components/OrderStatus";
+import { useAppStore } from "../../store/store";
 import { money } from "../../utils/currency";
+import { DateTimeFormat } from "../../utils/datetimeFormat";
+
+const displayStatus = (status: string) =>
+  status
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+
 export default function OrdersPage() {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
-  const { data = [] } = useQuery({ queryKey: ["orders"], queryFn: getOrders });
+  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const { data = [], isLoading, isError } = useQuery({
+    queryKey: ["orders", organizationId],
+    queryFn: () => getPurchaseOrders(organizationId),
+    enabled: Boolean(organizationId),
+  });
   const rows = useMemo(
     () =>
       data.filter((order) =>
-        `${order.id} ${order.supplierName} ${order.requestId}`
+        `${order.po_number} ${order.supplier?.name || ""} ${order.purchase_request?.request_number || ""} ${order.purchase_request?.title || ""}`
           .toLowerCase()
           .includes(query.toLowerCase()),
       ),
     [data, query],
   );
+
+  if (isLoading) return <div className="detail-loading" />;
+
   return (
     <>
       <section className="welcome">
@@ -46,8 +62,8 @@ export default function OrdersPage() {
             <span>Awaiting delivery</span>
             <strong>
               {
-                data.filter(
-                  (o) => o.status === "Issued" || o.status === "Acknowledged",
+                data.filter((order) =>
+                  ["issued", "acknowledged"].includes(order.status.toLowerCase()),
                 ).length
               }
             </strong>
@@ -58,7 +74,13 @@ export default function OrdersPage() {
           <div>
             <span>Partial deliveries</span>
             <strong>
-              {data.filter((o) => o.status === "Partially received").length}
+              {
+                data.filter(
+                  (order) =>
+                    order.status.toLowerCase().replaceAll(" ", "_") ===
+                    "partially_received",
+                ).length
+              }
             </strong>
           </div>
         </article>
@@ -67,7 +89,7 @@ export default function OrdersPage() {
           <div>
             <span>Fully received</span>
             <strong>
-              {data.filter((o) => o.status === "Received").length}
+              {data.filter((order) => order.status.toLowerCase() === "received").length}
             </strong>
           </div>
         </article>
@@ -77,71 +99,93 @@ export default function OrdersPage() {
           <Search size={18} />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(event) => setQuery(event.target.value)}
             placeholder="Search orders, suppliers or requests..."
           />
         </label>
       </div>
       <article className="panel supplier-table">
         <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Purchase order</th>
-                <th>Supplier</th>
-                <th>Order value</th>
-                <th>Status</th>
-                <th>Delivery progress</th>
-                <th>Issued</th>
-                <th>Expected</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((order) => {
-                const received = order.items.reduce(
-                  (a, i) => a + i.receivedQuantity,
-                  0,
-                );
-                const total = order.items.reduce(
-                  (a, i) => a + i.orderedQuantity,
-                  0,
-                );
-                return (
-                  <tr
-                    key={order.id}
-                    className="clickable-row"
-                    onClick={() => navigate(`/orders/${order.id}`)}
-                  >
-                    <td>
-                      <strong>{order.id}</strong>
-                      <small>From {order.requestId}</small>
-                    </td>
-                    <td>{order.supplierName}</td>
-                    <td className="amount">{money(order.total)}</td>
-                    <td>
-                      <OrderStatus status={order.status} />
-                    </td>
-                    <td>
-                      <div className="delivery-progress">
-                        <div>
-                          <i
-                            style={{
-                              width: `${total ? (received / total) * 100 : 0}%`,
-                            }}
-                          />
-                        </div>
+          {isError ? (
+            <div className="empty">
+              <ClipboardCheck />
+              <h3>Purchase orders could not be loaded</h3>
+            </div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Purchase order</th>
+                  <th>Supplier</th>
+                  <th>Order value</th>
+                  <th>Status</th>
+                  <th>Delivery progress</th>
+                  <th>Issued</th>
+                  <th>Expected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((order) => {
+                  const received = order.purchase_order_items.reduce(
+                    (total, item) => total + item.received_quantity,
+                    0,
+                  );
+                  const ordered = order.purchase_order_items.reduce(
+                    (total, item) => total + item.ordered_quantity,
+                    0,
+                  );
+                  return (
+                    <tr
+                      key={order.id}
+                      className="clickable-row"
+                      onClick={() => navigate(`/orders/${order.id}`)}
+                    >
+                      <td>
+                        <strong>{order.po_number}</strong>
                         <small>
-                          {received} of {total} units
+                          From {order.purchase_request?.request_number || order.request_id}
                         </small>
-                      </div>
-                    </td>
-                    <td>{order.issuedAt}</td>
-                    <td>{order.expectedDelivery}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td>{order.supplier?.name || "Unknown supplier"}</td>
+                      <td className="amount">{money(order.total)}</td>
+                      <td>
+                        <OrderStatus status={displayStatus(order.status)} />
+                      </td>
+                      <td>
+                        <div className="delivery-progress">
+                          <div>
+                            <i
+                              style={{
+                                width: `${ordered ? (received / ordered) * 100 : 0}%`,
+                              }}
+                            />
+                          </div>
+                          <small>
+                            {received} of {ordered} units
+                          </small>
+                        </div>
+                      </td>
+                      <td>{DateTimeFormat(order.issued_at, { dateStyle: "medium" }, "Date")}</td>
+                      <td>
+                        {DateTimeFormat(
+                          order.expected_delivery,
+                          { dateStyle: "medium" },
+                          "Date",
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+          {!isError && rows.length === 0 && (
+            <div className="empty">
+              <Search />
+              <h3>No purchase orders found</h3>
+              <p>Try a different search term.</p>
+            </div>
+          )}
         </div>
       </article>
     </>

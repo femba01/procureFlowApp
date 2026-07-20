@@ -28,3 +28,5 @@ export type CreateSupplierInput = Pick<
   >;
 
 export type SupplierOption = Pick<Supplier, "id" | "name">;
+
+export type UpdateSupplierInput = Omit<CreateSupplierInput, "organization_id">;

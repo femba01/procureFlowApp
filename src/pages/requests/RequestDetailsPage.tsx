@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Circle, Clock3, MessageSquare, Package, X } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, Clock3, MessageSquare, Package, Pencil, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getPurchaseRequestDetails } from "../../api/requestsApi";
 import DetailField from "../../components/DetailField";
@@ -27,8 +27,14 @@ export default function RequestDetailsPage() {
   });
 
   const {data: auditLogs} = useQuery({
-    queryKey: ["auditLogs"],
-    queryFn: () => getAuditLogs("Purchase request", requestId),
+    queryKey: ["auditLogs", user?.organization_id, "Purchase request", requestId],
+    queryFn: () =>
+      getAuditLogs({
+        organizationId: user!.organization_id,
+        entityType: "Purchase request",
+        entityId: requestId,
+      }),
+    enabled: Boolean(user?.organization_id && requestId),
   });
 
   if (isLoading) return <div className="detail-loading" />;
@@ -65,6 +71,13 @@ export default function RequestDetailsPage() {
               "Unknown department"}
           </p>
         </div>
+        {data.status.toLowerCase() === "draft" &&
+          (data.requester_id === user?.id || user?.role !== "Employee") && (
+          <Link className="secondary-button" to={`/requests/${data.id}/edit`}>
+            <Pencil size={17} />
+            Edit request
+          </Link>
+          )}
       </section>
       <div className="detail-layout">
         <div>

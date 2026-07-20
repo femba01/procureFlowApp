@@ -3,8 +3,10 @@ import {
   AlertTriangle,
   Banknote,
   CircleDollarSign,
+  Plus,
   WalletCards,
 } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -14,72 +16,110 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { getBudgets } from "../api/api";
+import { getDepartmentBudgets } from "../api/budgetsApi";
+import BudgetFormModal from "../components/BudgetFormModal";
+import { useAppStore } from "../store/store";
 import { compactMoney, money } from "../utils/currency";
+
+const displayStatus = (status: string) =>
+  status
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+
 export default function BudgetsPage() {
-  const { data = [] } = useQuery({
-    queryKey: ["budgets"],
-    queryFn: getBudgets,
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const { data = [], isLoading, isError } = useQuery({
+    queryKey: ["budgets", organizationId],
+    queryFn: () => getDepartmentBudgets(organizationId),
+    enabled: Boolean(organizationId),
   });
-  const allocated = data.reduce((a, b) => a + b.allocated, 0);
-  const spent = data.reduce((a, b) => a + b.spent, 0);
-  const committed = data.reduce((a, b) => a + b.committed, 0);
-  const chart = data.map((b) => ({
-    department: b.department,
-    allocated: b.allocated / 1000000,
-    spent: b.spent / 1000000,
-    committed: b.committed / 1000000,
+  const periods = useMemo(
+    () => [...new Set(data.map((budget) => budget.period))],
+    [data],
+  );
+  const activePeriod = selectedPeriod || periods[0] || "";
+  const budgets = useMemo(
+    () => data.filter((budget) => !activePeriod || budget.period === activePeriod),
+    [activePeriod, data],
+  );
+  const allocated = budgets.reduce((total, budget) => total + budget.allocated, 0);
+  const spent = budgets.reduce((total, budget) => total + budget.spent, 0);
+  const committed = budgets.reduce((total, budget) => total + budget.committed, 0);
+  const chart = budgets.map((budget) => ({
+    department: budget.department?.name || "Unknown",
+    allocated: budget.allocated / 1_000_000,
+    spent: budget.spent / 1_000_000,
+    committed: budget.committed / 1_000_000,
   }));
+
+  if (isLoading) return <div className="detail-loading" />;
+  if (isError)
+    return (
+      <div className="empty">
+        <WalletCards />
+        <h3>Department budgets could not be loaded</h3>
+      </div>
+    );
+
   return (
     <>
       <section className="welcome">
         <div>
           <h2>Department budgets</h2>
-          <p>Track allocations, commitments and actual spend for FY 2026.</p>
+          <p>
+            Track allocations, commitments and actual spend
+            {activePeriod ? ` for ${activePeriod}` : ""}.
+          </p>
         </div>
-        <select className="period-select">
-          <option>FY 2026</option>
-          <option>FY 2025</option>
-        </select>
+        <div className="budget-actions">
+          <select
+            className="period-select"
+            value={activePeriod}
+            onChange={(event) => setSelectedPeriod(event.target.value)}
+            disabled={periods.length === 0}
+          >
+            {periods.length === 0 ? (
+              <option value="">No periods available</option>
+            ) : (
+              periods.map((period) => (
+                <option key={period} value={period}>{period}</option>
+              ))
+            )}
+          </select>
+          <button className="primary-button" onClick={() => setFormOpen(true)}>
+            <Plus /> Add budget
+          </button>
+        </div>
       </section>
       <section className="budget-stats">
         <article>
-          <span className="budget-icon blue">
-            <WalletCards />
-          </span>
+          <span className="budget-icon blue"><WalletCards /></span>
           <div>
-            <small>Total allocated</small>
-            <strong>{money(allocated)}</strong>
-            <p>Across {data.length} departments</p>
+            <small>Total allocated</small><strong>{money(allocated)}</strong>
+            <p>Across {budgets.length} departments</p>
           </div>
         </article>
         <article>
-          <span className="budget-icon green">
-            <CircleDollarSign />
-          </span>
+          <span className="budget-icon green"><CircleDollarSign /></span>
           <div>
-            <small>Actual spend</small>
-            <strong>{money(spent)}</strong>
-            <p>{Math.round((spent / allocated) * 100)}% of allocation</p>
+            <small>Actual spend</small><strong>{money(spent)}</strong>
+            <p>{allocated ? Math.round((spent / allocated) * 100) : 0}% of allocation</p>
           </div>
         </article>
         <article>
-          <span className="budget-icon purple">
-            <Banknote />
-          </span>
+          <span className="budget-icon purple"><Banknote /></span>
           <div>
-            <small>Committed spend</small>
-            <strong>{money(committed)}</strong>
+            <small>Committed spend</small><strong>{money(committed)}</strong>
             <p>Approved, not fully paid</p>
           </div>
         </article>
         <article>
-          <span className="budget-icon orange">
-            <AlertTriangle />
-          </span>
+          <span className="budget-icon orange"><AlertTriangle /></span>
           <div>
             <small>Budget at risk</small>
-            <strong>{data.filter((b) => b.status !== "Healthy").length}</strong>
+            <strong>{budgets.filter((budget) => budget.status !== "healthy").length}</strong>
             <p>Require financial review</p>
           </div>
         </article>
@@ -91,18 +131,9 @@ export default function BudgetsPage() {
             <p>Amounts shown in millions of naira</p>
           </div>
           <div className="chart-legend">
-            <span>
-              <i className="allocated" />
-              Allocated
-            </span>
-            <span>
-              <i className="spent" />
-              Spent
-            </span>
-            <span>
-              <i className="committed" />
-              Committed
-            </span>
+            <span><i className="allocated" />Allocated</span>
+            <span><i className="spent" />Spent</span>
+            <span><i className="committed" />Committed</span>
           </div>
         </div>
         <div className="budget-chart">
@@ -118,7 +149,7 @@ export default function BudgetsPage() {
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tickFormatter={(v) => `₦${v}m`}
+                tickFormatter={(value) => `₦${value}m`}
                 tick={{ fill: "#7c8597", fontSize: 10 }}
               />
               <Tooltip formatter={(value) => `₦${value}m`} />
@@ -130,22 +161,19 @@ export default function BudgetsPage() {
         </div>
       </section>
       <section className="budget-cards">
-        {data.map((budget) => {
-          const utilised =
-            ((budget.spent + budget.committed) / budget.allocated) * 100;
+        {budgets.map((budget) => {
+          const utilised = budget.allocated
+            ? ((budget.spent + budget.committed) / budget.allocated) * 100
+            : 0;
           return (
             <article className="panel budget-card" key={budget.id}>
               <div className="budget-card-head">
                 <div>
-                  <h3>{budget.department}</h3>
-                  <p>
-                    {budget.owner} · {budget.period}
-                  </p>
+                  <h3>{budget.department?.name || "Unknown department"}</h3>
+                  <p>{budget.department?.code || "No code"} · {budget.period}</p>
                 </div>
-                <span
-                  className={`budget-status ${budget.status.toLowerCase()}`}
-                >
-                  {budget.status}
+                <span className={`budget-status ${budget.status}`}>
+                  {displayStatus(budget.status)}
                 </span>
               </div>
               <div className="budget-total">
@@ -154,25 +182,17 @@ export default function BudgetsPage() {
               </div>
               <div className="budget-progress">
                 <i
-                  className={budget.status.toLowerCase()}
+                  className={budget.status}
                   style={{ width: `${Math.min(100, utilised)}%` }}
                 />
               </div>
               <div className="budget-values">
-                <div>
-                  <span>Spent</span>
-                  <strong>{compactMoney(budget.spent)}</strong>
-                </div>
-                <div>
-                  <span>Committed</span>
-                  <strong>{compactMoney(budget.committed)}</strong>
-                </div>
+                <div><span>Spent</span><strong>{compactMoney(budget.spent)}</strong></div>
+                <div><span>Committed</span><strong>{compactMoney(budget.committed)}</strong></div>
                 <div>
                   <span>Available</span>
                   <strong>
-                    {compactMoney(
-                      budget.allocated - budget.spent - budget.committed,
-                    )}
+                    {compactMoney(budget.allocated - budget.spent - budget.committed)}
                   </strong>
                 </div>
               </div>
@@ -183,6 +203,15 @@ export default function BudgetsPage() {
           );
         })}
       </section>
+      {budgets.length === 0 && (
+        <div className="empty"><WalletCards /><h3>No budgets found for this period</h3></div>
+      )}
+      {formOpen && (
+        <BudgetFormModal
+          onClose={() => setFormOpen(false)}
+          onCreated={(budget) => setSelectedPeriod(budget.period)}
+        />
+      )}
     </>
   );
 }

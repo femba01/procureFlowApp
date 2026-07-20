@@ -7,6 +7,17 @@
   color: #596579;
   font-size: 11px;
 }
+.budget-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.budget-actions .primary-button svg {
+  width: 16px;
+  height: 16px;
+}
+
 .budget-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -412,6 +423,16 @@
   }
 }
 @media (max-width: 760px) {
+  .welcome {
+    flex-wrap: wrap;
+  }
+  .budget-actions {
+    width: 100%;
+  }
+  .budget-actions .period-select,
+  .budget-actions .primary-button {
+    flex: 1;
+  }
   .budget-stats,
   .budget-cards,
   .report-summary {

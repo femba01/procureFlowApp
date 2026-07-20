@@ -1,12 +1,12 @@
-import type { PurchaseOrderStatus } from "../types/orders";
-
 export default function OrderStatus({
   status,
 }: {
-  status: PurchaseOrderStatus;
+  status: string;
 }) {
   return (
-    <span className={`order-status ${status.toLowerCase().replace(" ", "-")}`}>
+    <span
+      className={`order-status ${status.toLowerCase().replaceAll("_", "-").replaceAll(" ", "-")}`}
+    >
       {status}
     </span>
   );
