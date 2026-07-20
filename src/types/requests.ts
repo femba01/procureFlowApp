@@ -11,6 +11,7 @@ export interface PurchaseRequest {
   title: string;
   department: string;
   department_id: string;
+  organization_id: string;
   requester: string;
   requester_id: string;
   request_number: string;
@@ -51,7 +52,7 @@ export interface PurchaseRequestDetails extends PurchaseRequest {
 
 export interface CreateRequestInput {
   title: string;
-  department: string;
+  department_id: string;
   priority: "Low" | "Medium" | "High";
   businessReason: string;
   neededBy: string;

@@ -1,58 +1,47 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  ClipboardCheck,
-  Package,
-  Truck,
-  X,
-} from "lucide-react";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Package, Truck } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { createGoodsReceipt, getOrder, updateOrderStatus } from "../../api/api";
+import { getPurchaseOrderById } from "../../api/purchaseOrdersApi";
 import DetailField from "../../components/DetailField";
 import OrderStatus from "../../components/OrderStatus";
+import { useAppStore } from "../../store/store";
 import { money } from "../../utils/currency";
+import { DateTimeFormat } from "../../utils/datetimeFormat";
+
+const displayStatus = (status: string) =>
+  status
+    .replaceAll("_", " ")
+    .replace(/^./, (letter) => letter.toUpperCase());
+
 export default function OrderDetailsPage() {
   const { orderId = "" } = useParams();
-  const client = useQueryClient();
-  const [open, setOpen] = useState(false);
-  const [note, setNote] = useState("");
-  const [deliveryNote, setDeliveryNote] = useState("");
-  const [condition, setCondition] = useState<
-    "Accepted" | "Accepted with issues"
-  >("Accepted");
-  const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const { data, isLoading } = useQuery({
-    queryKey: ["order", orderId],
-    queryFn: () => getOrder(orderId),
+  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["order", orderId, organizationId],
+    queryFn: () => getPurchaseOrderById(orderId, organizationId),
+    enabled: Boolean(orderId && organizationId),
   });
-  const statusMutation = useMutation({
-    mutationFn: updateOrderStatus,
-    onSuccess: (value) => {
-      client.setQueryData(["order", orderId], value);
-      client.invalidateQueries({ queryKey: ["orders"] });
-      client.invalidateQueries({ queryKey: ["inventory"] });
-      client.invalidateQueries({ queryKey: ["movements"] });
-    },
-  });
-  const receiptMutation = useMutation({
-    mutationFn: createGoodsReceipt,
-    onSuccess: (value) => {
-      client.setQueryData(["order", orderId], value);
-      client.invalidateQueries({ queryKey: ["orders"] });
-      client.invalidateQueries({ queryKey: ["inventory"] });
-      client.invalidateQueries({ queryKey: ["movements"] });
-      setOpen(false);
-      setQuantities({});
-      setDeliveryNote("");
-      setNote("");
-    },
-  });
-  if (isLoading || !data) return <div className="detail-loading" />;
-  const received = data.items.reduce((a, i) => a + i.receivedQuantity, 0);
-  const ordered = data.items.reduce((a, i) => a + i.orderedQuantity, 0);
+
+  if (isLoading) return <div className="detail-loading" />;
+  if (isError || !data)
+    return (
+      <div className="empty">
+        <Package />
+        <h3>Purchase order not found</h3>
+        <Link to="/orders">Return to purchase orders</Link>
+      </div>
+    );
+
+  const received = data.purchase_order_items.reduce(
+    (total, item) => total + item.received_quantity,
+    0,
+  );
+  const ordered = data.purchase_order_items.reduce(
+    (total, item) => total + item.ordered_quantity,
+    0,
+  );
   const progress = ordered ? (received / ordered) * 100 : 0;
+
   return (
     <>
       <div className="back-row">
@@ -60,36 +49,19 @@ export default function OrderDetailsPage() {
           <ArrowLeft size={17} />
           Back to purchase orders
         </Link>
-        <span>{data.id}</span>
+        <span>{data.po_number}</span>
       </div>
       <section className="order-hero">
         <div>
           <div className="request-id">
             <span>Purchase order</span>
-            <OrderStatus status={data.status} />
+            <OrderStatus status={displayStatus(data.status)} />
           </div>
-          <h2>{data.id}</h2>
+          <h2>{data.po_number}</h2>
           <p>
-            {data.supplierName} · Generated from {data.requestId}
+            {data.supplier?.name || "Unknown supplier"} · Generated from{" "}
+            {data.purchase_request?.request_number || data.request_id}
           </p>
-        </div>
-        <div className="button-row">
-          {data.status === "Issued" && (
-            <button
-              className="secondary-button"
-              onClick={() =>
-                statusMutation.mutate({ id: data.id, status: "Acknowledged" })
-              }
-            >
-              Mark acknowledged
-            </button>
-          )}
-          {data.status !== "Received" && data.status !== "Cancelled" && (
-            <button className="primary-button" onClick={() => setOpen(true)}>
-              <Package size={17} />
-              Receive goods
-            </button>
-          )}
         </div>
       </section>
       <section className="order-overview-grid">
@@ -108,21 +80,26 @@ export default function OrderDetailsPage() {
         <article className="panel">
           <span>Order value</span>
           <strong>{money(data.total)}</strong>
-          <small>{data.paymentTerms} payment terms</small>
+          <small>{data.payment_terms || "No payment terms provided"}</small>
         </article>
         <article className="panel">
           <span>Expected delivery</span>
-          <strong>{data.expectedDelivery}</strong>
-          <small>Issued {data.issuedAt}</small>
+          <strong>
+            {DateTimeFormat(
+              data.expected_delivery,
+              { dateStyle: "medium" },
+              "Date",
+            )}
+          </strong>
+          <small>
+            Issued{" "}
+            {DateTimeFormat(data.issued_at, { dateStyle: "medium" }, "Date")}
+          </small>
         </article>
         <article className="panel">
-          <span>Goods receipts</span>
-          <strong>{data.receipts.length}</strong>
-          <small>
-            {data.receipts.length
-              ? "Latest received " + data.receipts[0].receivedAt
-              : "No deliveries recorded"}
-          </small>
+          <span>Order items</span>
+          <strong>{data.purchase_order_items.length}</strong>
+          <small>{ordered} total units ordered</small>
         </article>
       </section>
       <div className="order-detail-layout">
@@ -148,21 +125,21 @@ export default function OrderDetailsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.items.map((item) => (
+                  {data.purchase_order_items.map((item) => (
                     <tr key={item.id}>
                       <td>
                         <strong>{item.description}</strong>
-                        <small>{item.id}</small>
+                        <small>{item.request_item_id || item.id}</small>
                       </td>
-                      <td>{money(item.unitPrice)}</td>
-                      <td>{item.orderedQuantity}</td>
-                      <td>{item.receivedQuantity}</td>
-                      <td>{item.orderedQuantity - item.receivedQuantity}</td>
+                      <td>{money(item.unit_price)}</td>
+                      <td>{item.ordered_quantity}</td>
+                      <td>{item.received_quantity}</td>
+                      <td>{item.ordered_quantity - item.received_quantity}</td>
                       <td>
                         <div className="mini-progress">
                           <i
                             style={{
-                              width: `${(item.receivedQuantity / item.orderedQuantity) * 100}%`,
+                              width: `${(item.received_quantity / item.ordered_quantity) * 100}%`,
                             }}
                           />
                         </div>
@@ -171,206 +148,55 @@ export default function OrderDetailsPage() {
                   ))}
                 </tbody>
               </table>
+              {data.purchase_order_items.length === 0 && (
+                <div className="no-receipts">
+                  <Truck />
+                  <p>No items were found for this purchase order.</p>
+                </div>
+              )}
             </div>
           </section>
-          <section className="panel receipt-history">
-            <h3>Goods receipt history</h3>
-            {data.receipts.length === 0 ? (
-              <div className="no-receipts">
-                <Truck />
-                <p>No goods have been received for this order.</p>
-              </div>
-            ) : (
-              data.receipts.map((receipt) => (
-                <article key={receipt.id}>
-                  <div className="receipt-icon">
-                    <ClipboardCheck />
-                  </div>
-                  <div>
-                    <strong>{receipt.id}</strong>
-                    <p>
-                      Delivery note {receipt.deliveryNote} ·{" "}
-                      {receipt.items.reduce((a, i) => a + i.quantity, 0)} units
-                    </p>
-                    <small>
-                      Received by {receipt.receivedBy} · {receipt.receivedAt}
-                    </small>
-                  </div>
-                  <span>
-                    <CheckCircle2 />
-                    {receipt.condition}
-                  </span>
-                </article>
-              ))
-            )}
-          </section>
+          {data.notes && (
+            <section className="panel receipt-history">
+              <h3>Order notes</h3>
+              <p>{data.notes}</p>
+            </section>
+          )}
         </div>
         <aside className="panel po-meta">
           <h3>Order information</h3>
           <DetailField
             className="po-info"
             label="Supplier"
-            value={data.supplierName}
+            value={data.supplier?.name || "Unknown supplier"}
           />
           <DetailField
             className="po-info"
             label="Delivery address"
-            value={data.deliveryAddress}
+            value={data.delivery_address}
           />
           <DetailField
             className="po-info"
             label="Payment terms"
-            value={data.paymentTerms}
+            value={data.payment_terms || "Not provided"}
           />
           <DetailField
             className="po-info"
             label="Currency"
-            value={data.currency}
+            value={data.currency.trim()}
           />
           <DetailField
             className="po-info"
             label="Quotation"
-            value={data.quotationId}
+            value={data.quotation_id}
           />
           <DetailField
             className="po-info"
             label="Purchase request"
-            value={data.requestId}
+            value={data.purchase_request?.request_number || data.request_id}
           />
         </aside>
       </div>
-      {open && (
-        <div className="modal-layer">
-          <button className="modal-backdrop" onClick={() => setOpen(false)} />
-          <form
-            className="supplier-modal receipt-modal"
-            onSubmit={(e) => {
-              e.preventDefault();
-              receiptMutation.mutate({
-                orderId: data.id,
-                deliveryNote,
-                condition,
-                notes: note,
-                items: data.items.map((item) => ({
-                  itemId: item.id,
-                  quantity: quantities[item.id] || 0,
-                })),
-              });
-            }}
-          >
-            <div className="modal-title">
-              <div>
-                <span>
-                  <Package />
-                </span>
-                <div>
-                  <h3>Record goods receipt</h3>
-                  <p>
-                    {data.id} · {data.supplierName}
-                  </p>
-                </div>
-              </div>
-              <button type="button" onClick={() => setOpen(false)}>
-                <X />
-              </button>
-            </div>
-            <div className="receipt-form">
-              <div className="modal-grid receipt-fields">
-                <label className="form-field">
-                  <span>Supplier delivery note</span>
-                  <input
-                    required
-                    value={deliveryNote}
-                    onChange={(e) => setDeliveryNote(e.target.value)}
-                    placeholder="e.g. DN-20984"
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Delivery condition</span>
-                  <select
-                    value={condition}
-                    onChange={(e) =>
-                      setCondition(e.target.value as typeof condition)
-                    }
-                  >
-                    <option>Accepted</option>
-                    <option>Accepted with issues</option>
-                  </select>
-                </label>
-              </div>
-              <div className="receive-lines">
-                <div className="receive-header">
-                  <span>Item</span>
-                  <span>Ordered</span>
-                  <span>Previously received</span>
-                  <span>Receive now</span>
-                </div>
-                {data.items.map((item) => {
-                  const outstanding =
-                    item.orderedQuantity - item.receivedQuantity;
-                  return (
-                    <div className="receive-row" key={item.id}>
-                      <div>
-                        <strong>{item.description}</strong>
-                        <small>{outstanding} outstanding</small>
-                      </div>
-                      <span>{item.orderedQuantity}</span>
-                      <span>{item.receivedQuantity}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max={outstanding}
-                        value={quantities[item.id] || 0}
-                        onChange={(e) =>
-                          setQuantities((q) => ({
-                            ...q,
-                            [item.id]: Number(e.target.value),
-                          }))
-                        }
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              <label className="form-field receipt-notes">
-                <span>Inspection notes (optional)</span>
-                <textarea
-                  rows={3}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder="Record damaged packaging, shortages or other observations"
-                />
-              </label>
-              {receiptMutation.isError && (
-                <p className="mutation-error">
-                  {receiptMutation.error.message}
-                </p>
-              )}
-            </div>
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="secondary-button"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="primary-button"
-                disabled={
-                  !deliveryNote ||
-                  Object.values(quantities).every((value) => !value) ||
-                  receiptMutation.isPending
-                }
-              >
-                {receiptMutation.isPending
-                  ? "Processing receipt..."
-                  : "Confirm goods receipt"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
     </>
   );
 }

@@ -128,7 +128,7 @@ export default function AppLayout() {
               Settings
             </NavLink>
           )}
-          <button
+          {/* <button
             type="button"
             className="sidebar-logout"
             disabled={isLoggingOut}
@@ -141,7 +141,7 @@ export default function AppLayout() {
             <small className="logout-error" role="alert">
               {logoutError}
             </small>
-          )}
+          )} */}
           <div className="user-card">
             <div className="avatar">{user?.initials}</div>
             <div className="user-card-details">

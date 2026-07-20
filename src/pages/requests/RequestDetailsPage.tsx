@@ -27,8 +27,14 @@ export default function RequestDetailsPage() {
   });
 
   const {data: auditLogs} = useQuery({
-    queryKey: ["auditLogs"],
-    queryFn: () => getAuditLogs("Purchase request", requestId),
+    queryKey: ["auditLogs", user?.organization_id, "Purchase request", requestId],
+    queryFn: () =>
+      getAuditLogs({
+        organizationId: user!.organization_id,
+        entityType: "Purchase request",
+        entityId: requestId,
+      }),
+    enabled: Boolean(user?.organization_id && requestId),
   });
 
   if (isLoading) return <div className="detail-loading" />;

@@ -1,6 +1,4 @@
-import type { StockStatus } from "../types/inventory";
-
-export default function StockBadge({ status }: { status: StockStatus }) {
+export default function StockBadge({ status }: { status: string }) {
   return (
     <span
       className={`stock-badge ${status.toLowerCase().replaceAll(" ", "-")}`}
