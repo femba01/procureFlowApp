@@ -2,6 +2,7 @@ import type {
   InventoryItemFormValues,
   WarehouseFormValues,
 } from "../schemas/inventory";
+import type { StockMovement } from "../types/inventory";
 import { createAuditLog } from "./auditLogsApi";
 import supabase from "./supabase";
 
@@ -67,6 +68,17 @@ export const getInventoryItemById = async (
   if (error) throw new Error(error.message);
   return data as unknown as InventoryItemRecord;
 };
+
+export const getStockMovementsById = async (itemId: string) => {
+  const { data, error } = await supabase
+    .from("stock_movements")
+    .select("*, actor:profiles(id, name)")
+    .eq("inventory_item_id", itemId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as unknown as StockMovement[];
+}
 
 const stockStatus = (
   quantity: number,
