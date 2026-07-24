@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Boxes, Warehouse, SlidersHorizontal, ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
+import { ArrowLeft, Boxes, SlidersHorizontal, ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getInventoryItemById, getStockMovementsById } from "../../api/inventoryApi";
 import StockBadge from "../../components/StockBadge";
