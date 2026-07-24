@@ -21,6 +21,7 @@ import { hasPermission, type Permission } from "../types/permissions";
 import { useQuery } from "@tanstack/react-query";
 import { getOrganisationSettings } from "../api/organizationsApi";
 import { getPurchaseRequests } from "../api/requestsApi";
+import { LoadingState } from "./ui";
 
 const nav = [
   ["Overview", "/dashboard", LayoutDashboard, "dashboard:view"],
@@ -50,10 +51,7 @@ export default function AppLayout() {
     queryFn: () => getOrganisationSettings(user?.organization_id || ""),
   });
 
-  if (isLoading) return <div className="route-loader" role="status" aria-live="polite">
-    <span />
-    <p>Loading workspace…</p>
-  </div>;
+  if (isLoading) return <LoadingState fullPage label="Loading workspace" />;
 
   if (!organization) return null;
 
@@ -128,9 +126,9 @@ export default function AppLayout() {
               Settings
             </NavLink>
           )}
-          {/* <button
+          <button
             type="button"
-            className="sidebar-logout"
+            className="mb-2 flex w-full items-center gap-2 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left text-[13px] font-semibold text-slate-300 hover:bg-[#25375b] hover:text-white disabled:opacity-60"
             disabled={isLoggingOut}
             onClick={handleLogout}
           >
@@ -141,7 +139,7 @@ export default function AppLayout() {
             <small className="logout-error" role="alert">
               {logoutError}
             </small>
-          )} */}
+          )}
           <div className="user-card">
             <div className="avatar">{user?.initials}</div>
             <div className="user-card-details">

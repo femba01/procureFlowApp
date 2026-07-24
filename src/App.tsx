@@ -4,6 +4,7 @@ import AppLayout from "./components/AppLayout";
 import PermissionGate from "./components/PermissionGate";
 import { useAppStore } from "./store/store";
 import type { Permission } from "./types/permissions";
+import { LoadingState } from "./components/ui";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
 const NewRequestPage = lazy(() => import("./pages/requests/NewRequestPage"));
@@ -38,21 +39,13 @@ export default function App() {
   }, [initializeAuth]);
 
   if (!authReady) {
-    return (
-      <div className="route-loader" role="status" aria-live="polite">
-        <span />
-        <p>Loading workspace…</p>
-      </div>
-    );
+    return <LoadingState fullPage label="Loading workspace" />;
   }
 
   return (
     <Suspense
       fallback={
-        <div className="route-loader" role="status" aria-live="polite">
-          <span />
-          <p>Loading workspace…</p>
-        </div>
+        <LoadingState fullPage label="Loading workspace" />
       }
     >
       <Routes>
