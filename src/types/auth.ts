@@ -15,3 +15,8 @@ export interface User {
   auth_user_id: string;
   initials: string;
 }
+
+export interface Actor {
+  id: string;
+  name: string;
+}

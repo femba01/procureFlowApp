@@ -1,21 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Package, Truck } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { getPurchaseOrderById } from "../../api/purchaseOrdersApi";
+import {
+  getPurchaseOrderById,
+  type PurchaseOrderItemRecord,
+} from "../../api/purchaseOrdersApi";
 import DetailField from "../../components/DetailField";
 import OrderStatus from "../../components/OrderStatus";
+import Table, { type TableColumn } from "../../components/ui/Table";
 import { useAppStore } from "../../store/store";
 import { money } from "../../utils/currency";
 import { DateTimeFormat } from "../../utils/datetimeFormat";
 
 const displayStatus = (status: string) =>
-  status
-    .replaceAll("_", " ")
-    .replace(/^./, (letter) => letter.toUpperCase());
+  status.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 
 export default function OrderDetailsPage() {
   const { orderId = "" } = useParams();
-  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const organizationId = useAppStore(
+    (state) => state.user?.organization_id ?? "",
+  );
   const { data, isLoading, isError } = useQuery({
     queryKey: ["order", orderId, organizationId],
     queryFn: () => getPurchaseOrderById(orderId, organizationId),
@@ -41,6 +45,43 @@ export default function OrderDetailsPage() {
     0,
   );
   const progress = ordered ? (received / ordered) * 100 : 0;
+  const itemColumns: TableColumn<PurchaseOrderItemRecord>[] = [
+    {
+      key: "description",
+      header: "Item",
+      render: (item) => (
+        <>
+          <strong>{item.description}</strong>
+          <small>{item.request_item_id || item.id}</small>
+        </>
+      ),
+    },
+    {
+      key: "unit_price",
+      header: "Unit price",
+      render: (item) => money(item.unit_price),
+    },
+    { key: "ordered_quantity", header: "Ordered" },
+    { key: "received_quantity", header: "Received" },
+    {
+      key: "outstanding",
+      header: "Outstanding",
+      render: (item) => item.ordered_quantity - item.received_quantity,
+    },
+    {
+      key: "progress",
+      header: "Progress",
+      render: (item) => (
+        <div className="mini-progress">
+          <i
+            style={{
+              width: `${item.ordered_quantity ? (item.received_quantity / item.ordered_quantity) * 100 : 0}%`,
+            }}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <>
@@ -104,58 +145,28 @@ export default function OrderDetailsPage() {
       </section>
       <div className="order-detail-layout">
         <div>
-          <section className="panel order-items-panel">
-            <div className="detail-title">
-              <div>
-                <h3>Order items</h3>
-                <p>Ordered and received quantities</p>
-              </div>
-              <strong>{money(data.total)}</strong>
-            </div>
-            <div className="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Unit price</th>
-                    <th>Ordered</th>
-                    <th>Received</th>
-                    <th>Outstanding</th>
-                    <th>Progress</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.purchase_order_items.map((item) => (
-                    <tr key={item.id}>
-                      <td>
-                        <strong>{item.description}</strong>
-                        <small>{item.request_item_id || item.id}</small>
-                      </td>
-                      <td>{money(item.unit_price)}</td>
-                      <td>{item.ordered_quantity}</td>
-                      <td>{item.received_quantity}</td>
-                      <td>{item.ordered_quantity - item.received_quantity}</td>
-                      <td>
-                        <div className="mini-progress">
-                          <i
-                            style={{
-                              width: `${(item.received_quantity / item.ordered_quantity) * 100}%`,
-                            }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {data.purchase_order_items.length === 0 && (
-                <div className="no-receipts">
-                  <Truck />
-                  <p>No items were found for this purchase order.</p>
+          <Table
+            className="order-items-panel"
+            data={data.purchase_order_items}
+            columns={itemColumns}
+            rowKey={(item) => item.id}
+            panelTitle
+            panelContent={
+              <div className="detail-title">
+                <div>
+                  <h3>Order items</h3>
+                  <p>Ordered and received quantities</p>
                 </div>
-              )}
-            </div>
-          </section>
+                <strong>{money(data.total)}</strong>
+              </div>
+            }
+            emptyMessage={
+              <div className="no-receipts">
+                <Truck />
+                <p>No items were found for this purchase order.</p>
+              </div>
+            }
+          />
           {data.notes && (
             <section className="panel receipt-history">
               <h3>Order notes</h3>

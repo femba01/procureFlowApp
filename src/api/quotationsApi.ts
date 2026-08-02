@@ -199,7 +199,7 @@ const getInvitationForToken = async (token: string) => {
       supplier:suppliers(id, name, email),
       purchase_request:purchase_requests(
         id, request_number, title, organization_id,
-        organization:organizations(name),
+        organization:organizations(legal_name),
         request_items(id, description, quantity)
       )
     `)
@@ -237,7 +237,7 @@ export const getPublicQuotationInvitation = async (token: string) => {
     supplierId: data.supplier.id,
     supplierName: data.supplier.name,
     supplierEmail: data.supplier.email,
-    organisationName: request.organization?.name || "the buyer",
+    organisationName: request.organization?.legal_name || "the buyer",
     expiresAt: data.expires_at,
     items: request.request_items.map(
       (item: { id: string; description: string; quantity: number }) => ({

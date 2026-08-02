@@ -48,39 +48,70 @@ export interface PurchaseRequestDetailsRecord {
   request_items: RequestItemRecord[];
 }
 
+export type ApprovalStage = "manager" | "finance" | "executive";
+export type ApprovalAction = "approved" | "rejected" | "commented";
+
+export interface ApprovalEventRecord {
+  id: string;
+  request_id: string;
+  approver_id: string;
+  stage: ApprovalStage;
+  action: ApprovalAction;
+  comment: string | null;
+  created_at: string;
+  approver: { name: string; role: string } | null;
+}
+
+export interface DecidePurchaseRequestInput {
+  requestId: string;
+  organizationId: string;
+  approverId: string;
+  stage: ApprovalStage;
+  action: Exclude<ApprovalAction, "commented">;
+  comment?: string;
+}
+
 const createRequestNumber = () => {
   const year = new Date().getFullYear();
   const uniquePart = crypto.randomUUID().slice(0, 8).toUpperCase();
   return `PR-${year}-${uniquePart}`;
 };
 
-export const getPurchaseRequests = async (organizationId: string, departmentId?: string, requesterId?: string) => {
+export const getPurchaseRequests = async (
+  organizationId: string,
+  departmentId?: string,
+  requesterId?: string,
+) => {
   let query = supabase
-    .from('purchase_requests')
-    .select('*')
-    .eq('organization_id', organizationId)
-    .order('created_at', { ascending: false });
+    .from("purchase_requests")
+    .select("*")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false });
 
   if (departmentId?.trim()) {
-    query = query.eq('department_id', departmentId.trim());
+    query = query.eq("department_id", departmentId.trim());
   }
   if (requesterId?.trim()) {
-    query = query.eq('requester_id', requesterId.trim());
+    query = query.eq("requester_id", requesterId.trim());
   }
-    const { data, error } = await query;
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data as PurchaseRequest[];
-}
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data as PurchaseRequest[];
+};
 
 export const getPurchaseRequestsById = async (id: string) => {
-    const { data, error } = await supabase.from('purchase_requests').select('*').eq('id', id).single();
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data as PurchaseRequest;
-}
+  const { data, error } = await supabase
+    .from("purchase_requests")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data as PurchaseRequest;
+};
 
 export const getPurchaseRequestDetails = async (id: string) => {
   const { data: request, error: requestError } = await supabase
@@ -107,13 +138,79 @@ export const getPurchaseRequestDetails = async (id: string) => {
   } as PurchaseRequestDetailsRecord;
 };
 
+export const getApprovalEvents = async (requestId: string) => {
+  const { data, error } = await supabase
+    .from("approval_events")
+    .select("*, approver:profiles(name, role)")
+    .eq("request_id", requestId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data as unknown as ApprovalEventRecord[];
+};
+
+export const decidePurchaseRequest = async ({
+  requestId,
+  organizationId,
+  approverId,
+  stage,
+  action,
+  comment,
+}: DecidePurchaseRequestInput) => {
+  const { data: current, error: currentError } = await supabase
+    .from("purchase_requests")
+    .select("id, status")
+    .eq("id", requestId)
+    .eq("organization_id", organizationId)
+    .single();
+
+  if (currentError) throw new Error(currentError.message);
+  if (!["Draft", "Pending approval"].includes(current.status)) {
+    throw new Error("This request is no longer awaiting approval.");
+  }
+
+  const { data: approvalEvent, error: eventError } = await supabase
+    .from("approval_events")
+    .insert({
+      request_id: requestId,
+      approver_id: approverId,
+      stage,
+      action,
+      comment: comment?.trim() || null,
+    })
+    .select("id")
+    .single();
+
+  if (eventError) throw new Error(eventError.message);
+
+  const status = action === "approved" ? "Approved" : "Rejected";
+  const { data: request, error: requestError } = await supabase
+    .from("purchase_requests")
+    .update({ status })
+    .eq("id", requestId)
+    .eq("organization_id", organizationId)
+    .eq("status", current.status)
+    .select("*")
+    .single();
+
+  if (requestError) {
+    await supabase.from("approval_events").delete().eq("id", approvalEvent.id);
+    throw new Error(requestError.message);
+  }
+
+  return request as PurchaseRequest;
+};
+
 export const getRequestItems = async (request_id: string) => {
-    const { data, error } = await supabase.from('request_items').select('*').eq('request_id', request_id);
-    if (error) {
-        throw new Error(error.message);
-    }
-    return data as RequestItem[];
-}
+  const { data, error } = await supabase
+    .from("request_items")
+    .select("*")
+    .eq("request_id", request_id);
+  if (error) {
+    throw new Error(error.message);
+  }
+  return data as RequestItem[];
+};
 
 export const createPurchaseRequest = async ({
   organizationId,

@@ -23,6 +23,7 @@
     "react": "latest",
     "react-dom": "latest",
     "react-hook-form": "latest",
+    "react-paginate": "^8.3.0",
     "react-router-dom": "latest",
     "recharts": "latest",
     "tailwindcss": "latest",

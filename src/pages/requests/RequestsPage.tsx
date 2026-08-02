@@ -7,7 +7,9 @@ import { money } from "../../utils/currency";
 import { useAppStore } from "../../store/store";
 import { getPurchaseRequests } from "../../api/requestsApi";
 import { DateTimeFormat } from "../../utils/datetimeFormat";
-import ClientPagination from "../../components/ClientPagination";
+import type { PurchaseRequest } from "../../types/requests";
+import type { TableColumn } from "../../components/ui/Table";
+import Table from "../../components/ui/Table";
 
 export default function RequestsPage() {
   const [query, setQuery] = useState("");
@@ -48,28 +50,108 @@ export default function RequestsPage() {
     [purchaseRequests, query, activeTab, user?.id],
   );
 
-  const [currentPage, setCurrentPage] = useState(0);
-
-  const itemsPerPage = 10;
-  const pageCount = Math.ceil((rows && rows.length / itemsPerPage));
-  const safeCurrentPage = Math.min(
-    currentPage,
-    Math.max(0, pageCount - 1),
+  const requestTabs = useMemo(
+    () => [
+      {
+        label: "All",
+        value: "All" as const,
+        count: purchaseRequests?.length ?? 0,
+      },
+      {
+        label: "My requests",
+        value: "My" as const,
+        count:
+          purchaseRequests?.filter(
+            (request) => request.requester_id === user?.id,
+          ).length ?? 0,
+      },
+      {
+        label: "Pending approval",
+        value: "Pending approval" as const,
+        count:
+          purchaseRequests?.filter(
+            (request) => request.status === "Pending approval",
+          ).length ?? 0,
+      },
+      {
+        label: "Approved",
+        value: "Approved" as const,
+        count:
+          purchaseRequests?.filter(
+            (request) => request.status === "Approved",
+          ).length ?? 0,
+      },
+      {
+        label: "Completed",
+        value: "Completed" as const,
+        count:
+          purchaseRequests?.filter(
+            (request) => request.status === "Completed",
+          ).length ?? 0,
+      },
+    ],
+    [purchaseRequests, user?.id],
   );
-  const startIndex = safeCurrentPage * itemsPerPage;
 
-  const currentUsers = rows.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
-
-  const handlePageChange = ({
-    selected,
-  }: {
-    selected: number;
-  }) => {
-    setCurrentPage(selected);
-  };
+  const columns: TableColumn<PurchaseRequest>[] = [
+    {
+      key: "id",
+      header: "Request",
+      render: (item) => (
+        <p>
+          <strong>{item.title}</strong>
+          <small>
+            {item.request_number}
+          </small>
+        </p>
+      ),
+    },
+    {
+      key: "requester",
+      header: "Requested by",
+      render: (item) => (
+        <span>{item.requester}</span>
+      )
+    },
+    {
+      key: "department",
+      header: "Department",
+      render: (item) => (
+        <span>{item.department}</span>
+      )
+    },
+    {
+      key: "estimated_total",
+      header: "Amount",
+      render: (item) => (
+        <strong className="money">{money(item.estimated_total)}</strong>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (item) => (
+        <StatusBadge status={item.status} />
+      ),
+    },
+    {
+      key: "priority",
+      header: "Priority",
+      render: (item) => (
+        <span className={`priority ${item.priority.toLowerCase()}`}>
+          {item.priority}
+        </span>
+      ),
+    },
+    {
+      key: "created_at",
+      header: "Date",
+      render: (item) => (
+        DateTimeFormat(item.created_at, { dateStyle: "long" })
+      )
+      ,
+    },
+  ];
 
   return (
     <>
@@ -101,85 +183,51 @@ export default function RequestsPage() {
           Export
         </button>
       </div>
-      <article className="panel requests-panel">
-        <div className="tabs text-nowrap">
-          <button type="button" onClick={() => setActiveTab("All")} className={activeTab === "All" ? "selected" : ""}>
-            All <span>{purchaseRequests?.length}</span>
-          </button>
-          <button type="button" onClick={() => setActiveTab("My")} className={activeTab === "My" ? "selected" : ""}>
-            My requests <span>{purchaseRequests && purchaseRequests?.filter(item => item.requester_id === user?.id).length}</span>
-          </button>
-          <button type="button" onClick={() => setActiveTab("Pending approval")} className={activeTab === "Pending approval" ? "selected" : ""}>
-            Pending approval <span>{purchaseRequests && purchaseRequests?.filter(item => item.status === "Pending approval").length}</span>
-          </button>
-          <button type="button" onClick={() => setActiveTab("Approved")} className={activeTab === "Approved" ? "selected" : ""}>
-            Approved <span>{purchaseRequests && purchaseRequests?.filter(item => item.status === "Approved").length}</span>
-          </button>
-          <button type="button" onClick={() => setActiveTab("Completed")} className={activeTab === "Completed" ? "selected" : ""}>
-            Completed <span>{purchaseRequests && purchaseRequests?.filter(item => item.status === "Completed").length}</span>
-          </button>
-        </div>
-        <div className="table-wrap">
-          {rows && <div>
-            <table className="text-nowrap">
-              <thead>
-                <tr>
-                  <th>Request</th>
-                  <th>Requested by</th>
-                  <th>Department</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers?.map((r) => (
-                  <tr
-                    key={r.id}
-                    onClick={() => navigate(`/requests/${r.id}`)}
-                    className="clickable-row"
+      <Table
+        data={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        onRowClick={(row) => navigate(`/requests/${row.id}`)}
+        panelTitle={true}
+        panelContent={
+          <div className="tabs text-nowrap">
+            {requestTabs.map((tab) => {
+              const isActive = activeTab === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${isActive
+                      ? "border-blue-600 text-blue-600!"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800"
+                    }`}
+                >
+                  {tab.label}
+
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isActive
+                        ? "bg-blue-100 text-blue-700"
+                        : "bg-gray-100 text-gray-600"
+                      }`}
                   >
-                    <td>
-                      <strong>{r.title}</strong>
-                      <small>
-                        {r.request_number}
-                      </small>
-                    </td>
-                    <td>{r.requester}</td>
-                    <td>{r.department}</td>
-                    <td className="amount">{money(r.estimated_total)}</td>
-                    <td>
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td>
-                      <span className={`priority ${r.priority.toLowerCase()}`}>
-                        {r.priority}
-                      </span>
-                    </td>
-                    <td>{DateTimeFormat(r.created_at, { dateStyle: "long" })}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>}
-          <div>
-            {pageCount > 1 && (
-          <ClientPagination
-            pageCount={pageCount}
-            currentPage={safeCurrentPage}
-            handlePageChange={handlePageChange}
-          />)}
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-          {rows && rows.length === 0 && (
-            <div className="empty">
-              <Search />
-              <h3>No requests found</h3>
-              <p>Try a different search term.</p>
-            </div>
-          )}
-        </div>
-      </article>
+        }
+        emptyMessage={
+          <div className="empty">
+            <Search />
+            <h3>No requests found</h3>
+            <p>Try a different search term.</p>
+          </div>
+        }
+      />
     </>
   );
 }

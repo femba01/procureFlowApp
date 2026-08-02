@@ -10,7 +10,7 @@ export default function DetailField({
   className,
 }: DetailFieldProps) {
   return (
-    <div className={className}>
+    <div className={`leading-4 ${className || ""}`}>
       <span>{label}</span>
       <strong>{value}</strong>
     </div>

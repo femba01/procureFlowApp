@@ -4,15 +4,17 @@ import { money } from "../utils/currency";
 import { getPurchaseRequests } from "../api/requestsApi";
 import { useAppStore } from "../store/store";
 import { DateTimeFormat } from "../utils/datetimeFormat";
-import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Clock3, Plus, Store, WalletCards } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ArrowDownRight, ArrowUpRight, CircleDollarSign, Clock3, Plus, Search, Store, WalletCards } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { getSuppliers } from "../api/suppliersApi";
 import { getDepartmentBudgets } from "../api/budgetsApi";
 import { getDepartments } from "../api/departmentsApi";
+import Table, { type TableColumn } from "../components/ui/Table";
+import type { PurchaseRequest } from "../types/requests";
 
 export default function DashboardPage() {
   const { user } = useAppStore();
-
+  const navigate = useNavigate();
   const organizationId = user?.organization_id ?? "";
   const { data: suppliers = [] } = useQuery({
     queryKey: ["suppliers", organizationId],
@@ -82,17 +84,65 @@ export default function DashboardPage() {
   }
 
   const pieChartColors = [
-  "#3B82F6", // Vibrant Blue
-  "#10B981", // Emerald Green
-  "#F59E0B", // Amber Yellow
-  "#EF4444", // Coral Red
-  "#8B5CF6", // Royal Purple
-  "#06B6D4", // Bright Teal
-  "#EC4899", // Pink Rose
-  "#F97316", // Bright Orange
-  "#6366F1", // Indigo Blue
-  "#14B8A6"  // Mint Teal
-];
+    "#3B82F6", // Vibrant Blue
+    "#10B981", // Emerald Green
+    "#F59E0B", // Amber Yellow
+    "#EF4444", // Coral Red
+    "#8B5CF6", // Royal Purple
+    "#06B6D4", // Bright Teal
+    "#EC4899", // Pink Rose
+    "#F97316", // Bright Orange
+    "#6366F1", // Indigo Blue
+    "#14B8A6"  // Mint Teal
+  ];
+
+  const columns: TableColumn<PurchaseRequest>[] = [
+    {
+      key: "id",
+      header: "Request",
+      render: (item) => (
+        <strong>{item.title}</strong>
+      ),
+    },
+    {
+      key: "department",
+      header: "Department",
+      render: (item) => (
+        <span>{item.department}</span>
+      )
+    },
+    {
+      key: "estimated_total",
+      header: "Amount",
+      render: (item) => (
+        <strong className="money">{money(item.estimated_total)}</strong>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (item) => (
+        <StatusBadge status={item.status} />
+      ),
+    },
+    {
+      key: "priority",
+      header: "Priority",
+      render: (item) => (
+        <span className={`priority ${item.priority.toLowerCase()}`}>
+          {item.priority}
+        </span>
+      ),
+    },
+    {
+      key: "created_at",
+      header: "Date",
+      render: (item) => (
+        DateTimeFormat(item.created_at, { dateStyle: "long" })
+      )
+      ,
+    },
+  ];
 
   return (
     <>
@@ -101,7 +151,7 @@ export default function DashboardPage() {
           <h2>Good afternoon, {user?.name}</h2>
           <p>Here's what's happening with procurement today.</p>
         </div>
-        <Link className="primary-button" to="/requests">
+        <Link className="primary-button" to="/requests/new">
           <Plus size={18} />
           New request
         </Link>
@@ -173,9 +223,9 @@ export default function DashboardPage() {
           <div className="category-chart">
             <div
               className="donut"
-              // style={{
-              //   background: `conic-gradient(${data.categories.map((c, i) => `${c.color} ${data.categories.slice(0, i).reduce((a, x) => a + x.value, 0)}% ${data.categories.slice(0, i + 1).reduce((a, x) => a + x.value, 0)}%`).join(",")})`,
-              // }}
+            // style={{
+            //   background: `conic-gradient(${data.categories.map((c, i) => `${c.color} ${data.categories.slice(0, i).reduce((a, x) => a + x.value, 0)}% ${data.categories.slice(0, i + 1).reduce((a, x) => a + x.value, 0)}%`).join(",")})`,
+            // }}
             >
               <div>
                 <strong>₦18.5m</strong>
@@ -186,62 +236,44 @@ export default function DashboardPage() {
               {budgets.map((c, i) => {
                 const percentage = budgets.map(b => b.spent).reduce((a, x) => a + x, 0) > 0 ? ((c.spent / budgets.map(b => b.spent).reduce((a, x) => a + x, 0)) * 100).toFixed(1) : 0;
                 return (
-                <div key={c.department_id}>
-                  <span>
-                    <i style={{ background: pieChartColors[i % pieChartColors.length] }} />
-                    {getDepartmentName(c.department_id)}
-                  </span>
-                  <strong>{percentage}%</strong>
-                </div>
-              )})}
+                  <div key={c.department_id}>
+                    <span>
+                      <i style={{ background: pieChartColors[i % pieChartColors.length] }} />
+                      {getDepartmentName(c.department_id)}
+                    </span>
+                    <strong>{percentage}%</strong>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </article>
       </section>
-      <article className="panel requests-panel">
-        <PanelTitle
-          title="Recent purchase requests"
-          subtitle="Latest activity across your organisation"
-          action="View all"
-        />
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Request</th>
-                <th>Department</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseRequests && purchaseRequests.slice(0, 4).map((r) => (
-                <tr key={r.id}>
-                  <td>
-                    <strong>{r.title}</strong>
-                    {/* <small>
-                      {r.id} · {r.items.length} items
-                    </small> */}
-                  </td>
-                  <td>{r.department}</td>
-                  <td className="amount">{money(r.estimated_total)}</td>
-                  <td>
-                    <StatusBadge status={r.status} />
-                  </td>
-                  <td>
-                    <span className={`priority ${r.priority.toLowerCase()}`}>
-                      {r.priority}
-                    </span>
-                  </td>
-                  <td>{DateTimeFormat(r.created_at, { dateStyle: "long" })}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
+      <Table
+        data={purchaseRequests.slice(0, 4)}
+        columns={columns}
+        rowKey={(row) => row.id}
+        onRowClick={(row) => navigate(`/dashboard/request/${row.id}`)}
+        panelTitle={true}
+        panelContent={
+          <div className="panel-title">
+            <div>
+              <h3>Recent requests</h3>
+              <p>Latest purchase requests</p>
+            </div>
+            <Link to="/requests" className="secondary-button">
+              View all
+            </Link>
+          </div>
+        }
+        emptyMessage={
+          <div className="empty">
+            <Search />
+            <h3>No requests found</h3>
+            <p>Try a different search term.</p>
+          </div>
+        }
+      />
     </>
   );
 }

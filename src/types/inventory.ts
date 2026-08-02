@@ -1,3 +1,5 @@
+import type { Actor } from "./auth";
+
 export interface Warehouse {
   id: string;
   name: string;
@@ -29,17 +31,19 @@ export type MovementType =
   | "Negative adjustment"
   | "Transfer";
 
+
 export interface StockMovement {
   id: string;
   itemId: string;
-  type: MovementType;
-  quantity: number;
-  balanceAfter: number;
+  movement_type: MovementType;
+  quantity_change: number;
+  balance_after: number;
   reference: string;
   warehouseName: string;
   performedBy: string;
-  createdAt: string;
+  created_at: string;
   notes?: string;
+  actor?: Actor;
 }
 
 export interface StockAdjustmentInput {
