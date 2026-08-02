@@ -68,9 +68,9 @@ export default function NewRequestPage() {
   const departmentId = useWatch({ control, name: "departmentId" });
 
   useEffect(() => {
-    if(departmentId && departments.length > 0) {
-      const selectedDepartment = departments.find(d => d.id === departmentId);
-      if(selectedDepartment) {
+    if (departmentId && departments.length > 0) {
+      const selectedDepartment = departments.find((d) => d.id === departmentId);
+      if (selectedDepartment) {
         setValue("department", selectedDepartment.name);
       }
     }
@@ -92,9 +92,7 @@ export default function NewRequestPage() {
         user?.name ||
         "",
       priority: existingRequest.priority.toLowerCase() as
-        | "low"
-        | "medium"
-        | "high",
+        "low" | "medium" | "high",
       neededBy: existingRequest.needed_by.slice(0, 10),
       costCentre: existingRequest.cost_centre,
       preferredSupplierId: existingRequest.preferred_supplier_id || "",
@@ -142,7 +140,7 @@ export default function NewRequestPage() {
   });
 
   if (isEditing && isLoadingRequest) return <div className="detail-loading" />;
-  
+
   return (
     <div className="form-page">
       <div className="back-row">
@@ -154,13 +152,15 @@ export default function NewRequestPage() {
       </div>
       <section className="welcome">
         <div>
-          <h2>{isEditing ? "Edit purchase request" : "Create purchase request"}</h2>
+          <h2>
+            {isEditing ? "Edit purchase request" : "Create purchase request"}
+          </h2>
           <p>Provide the business need and add every item required.</p>
         </div>
       </section>
       <form onSubmit={handleSubmit((data) => mutation.mutate(data))}>
         <div className="form-layout">
-          <div className="form-main col-span-2 md:col-span-1">
+          <div className="form-main">
             <section className="panel form-section">
               <div className="section-heading">
                 <span>1</span>
@@ -261,7 +261,10 @@ export default function NewRequestPage() {
                 </div>
                 {fields.map((field, index) => (
                   <div className="line-row" key={field.id}>
-                    <div>
+                    <div className="line-field line-description">
+                      <span className="mobile-field-label">
+                        Item description
+                      </span>
                       <input
                         {...register(`lineItems.${index}.description`)}
                         placeholder="Item name"
@@ -272,7 +275,8 @@ export default function NewRequestPage() {
                         </small>
                       )}
                     </div>
-                    <div>
+                    <div className="line-field line-category">
+                      <span className="mobile-field-label">Category</span>
                       <select {...register(`lineItems.${index}.category`)}>
                         <option value="">Category</option>
                         <option>IT equipment</option>
@@ -287,26 +291,36 @@ export default function NewRequestPage() {
                         </small>
                       )}
                     </div>
-                    <input
-                      type="number"
-                      min="1"
-                      {...register(`lineItems.${index}.quantity`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      {...register(`lineItems.${index}.unitPrice`, {
-                        valueAsNumber: true,
-                      })}
-                    />
-                    <strong>
-                      {money(
-                        (Number(items[index]?.quantity) || 0) *
-                          (Number(items[index]?.unitPrice) || 0),
-                      )}
-                    </strong>
+                    <label className="line-field line-quantity">
+                      <span className="mobile-field-label">Quantity</span>
+                      <input
+                        type="number"
+                        min="1"
+                        {...register(`lineItems.${index}.quantity`, {
+                          valueAsNumber: true,
+                        })}
+                      />
+                    </label>
+                    <label className="line-field line-price">
+                      <span className="mobile-field-label">Unit price</span>
+                      <input
+                        type="number"
+                        min="0"
+                        inputMode="decimal"
+                        {...register(`lineItems.${index}.unitPrice`, {
+                          valueAsNumber: true,
+                        })}
+                      />
+                    </label>
+                    <div className="line-total">
+                      <span className="mobile-field-label">Line total</span>
+                      <strong>
+                        {money(
+                          (Number(items[index]?.quantity) || 0) *
+                            (Number(items[index]?.unitPrice) || 0),
+                        )}
+                      </strong>
+                    </div>
                     <button
                       type="button"
                       aria-label="Remove item"
@@ -376,9 +390,7 @@ export default function NewRequestPage() {
                   : "Submit for approval"}
             </button>
             {mutation.isError && (
-              <p className="mutation-error">
-                {mutation.error.message}
-              </p>
+              <p className="mutation-error">{mutation.error.message}</p>
             )}
             {!isEditing && (
               <button type="button" className="draft-button">

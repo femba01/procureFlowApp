@@ -135,6 +135,9 @@
 .line-items {
   overflow-x: auto;
 }
+.mobile-field-label {
+  display: none;
+}
 .line-header,
 .line-row {
   display: grid;
@@ -481,12 +484,104 @@
   }
 }
 @media (max-width: 760px) {
+  .form-page .welcome {
+    margin-bottom: 18px;
+  }
+  .form-page .welcome h2 {
+    font-size: 20px;
+  }
+  .form-page .welcome p {
+    max-width: 100%;
+  }
+  .form-layout,
+  .form-main {
+    gap: 14px;
+  }
+  .form-section,
+  .form-summary {
+    padding: 18px;
+  }
+  .section-heading {
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .section-heading > span {
+    flex: 0 0 28px;
+  }
   .form-grid,
   .overview-grid {
     grid-template-columns: 1fr;
   }
+  .form-grid {
+    gap: 14px;
+  }
   .form-field.wide {
     grid-column: auto;
+  }
+  .line-items {
+    overflow: visible;
+  }
+  .line-header {
+    display: none;
+  }
+  .line-row {
+    position: relative;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 10px;
+    min-width: 0;
+    margin-top: 12px;
+    padding: 16px;
+    border: 1px solid #e1e6ed;
+    border-radius: 10px;
+    background: #fbfcfe;
+  }
+  .mobile-field-label {
+    display: block;
+    margin-bottom: 6px;
+    color: #667085;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .line-description,
+  .line-category {
+    grid-column: 1 / -1;
+  }
+  .line-total {
+    align-self: end;
+  }
+  .line-row .line-total strong {
+    display: block;
+    padding: 5px 0 4px;
+    color: #1f2a3d;
+    font-size: 13px;
+  }
+  .line-row > button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #e1e6ed;
+  }
+  .line-description > input {
+    padding-right: 42px;
+  }
+  .add-line {
+    width: 100%;
+    min-height: 42px;
+    justify-content: center;
+    margin-top: 12px;
+    border: 1px dashed #b8c8ed;
+    border-radius: 8px;
+    background: #f7f9ff;
+  }
+  .form-summary .primary-button,
+  .form-summary .draft-button {
+    min-height: 44px;
   }
   .info,
   .info:nth-child(3n),
@@ -521,5 +616,23 @@
   .detail-items b {
     grid-column: 2;
     text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .form-section,
+  .form-summary {
+    padding: 15px;
+  }
+  .line-row {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+  .line-description,
+  .line-category {
+    grid-column: auto;
+  }
+  .line-description > input {
+    padding-right: 38px;
   }
 }
