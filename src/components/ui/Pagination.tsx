@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ReactPaginate from "react-paginate";
 
 interface PaginationProps {
@@ -18,8 +18,8 @@ export default function Pagination({
         pageCount={totalPages}
         className="flex min-w-max items-center justify-center gap-1 sm:gap-2"
         breakLabel="..."
-        nextLabel={<span className="flex items-center gap-1"><span className="hidden sm:inline">Next</span><CgChevronRight /></span>}
-        previousLabel={<span className="flex items-center gap-1"><CgChevronLeft /><span className="hidden sm:inline">Previous</span></span>}
+        nextLabel={<span className="flex items-center gap-1"><span className="hidden sm:inline">Next</span><ChevronRight /></span>}
+        previousLabel={<span className="flex items-center gap-1"><ChevronLeft /><span className="hidden sm:inline">Previous</span></span>}
         pageLinkClassName="py-1 px-2 my-auto rounded-md text-gray-500 cursor-pointer"
         activeLinkClassName="rounded-md text-primary font-bold"
         nextClassName="cursor-pointer my-auto text-gray-500 p-1 rounded-md"

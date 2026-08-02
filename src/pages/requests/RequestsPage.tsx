@@ -7,17 +7,9 @@ import { money } from "../../utils/currency";
 import { useAppStore } from "../../store/store";
 import { getPurchaseRequests } from "../../api/requestsApi";
 import { DateTimeFormat } from "../../utils/datetimeFormat";
-import ClientPagination from "../../components/ClientPagination";
 import type { PurchaseRequest } from "../../types/requests";
 import type { TableColumn } from "../../components/ui/Table";
 import Table from "../../components/ui/Table";
-
-type TabValue =
-  | "All"
-  | "My"
-  | "Pending approval"
-  | "Approved"
-  | "Completed";
 
 export default function RequestsPage() {
   const [query, setQuery] = useState("");

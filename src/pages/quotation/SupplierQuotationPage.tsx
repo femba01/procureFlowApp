@@ -619,28 +619,7 @@ function Summary({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-function ProcessStep({
-  number,
-  label,
-  active = false,
-}: {
-  number: string;
-  label: string;
-  active?: boolean;
-}) {
-  return (
-    <div
-      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold ${active ? "bg-blue-50 text-blue-700" : "bg-slate-50 text-slate-500"}`}
-    >
-      <span
-        className={`grid size-6 place-items-center rounded-full ${active ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-600"}`}
-      >
-        {number}
-      </span>
-      {label}
-    </div>
-  );
-}
+
 function InvitationError({ message }: { message: string }) {
   return (
     <main className="ml-0 grid min-h-screen place-items-center bg-slate-50 p-5">
