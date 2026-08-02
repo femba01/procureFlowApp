@@ -222,7 +222,7 @@ export default function QuotationsPage() {
             {requests.length === 0 && (
               <option value="">No requests available</option>
             )}
-            {requests.map((request) => (
+            {requests.map((request) => (request.status == "Approved") && (
               <option key={request.id} value={request.id}>
                 {request.request_number} — {request.title}
               </option>

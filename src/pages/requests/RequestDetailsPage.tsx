@@ -1,7 +1,23 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Check, CheckCircle2, Circle, Clock3, MessageSquare, Package, Pencil, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Check,
+  CheckCircle2,
+  Circle,
+  Clock3,
+  MessageSquare,
+  Package,
+  Pencil,
+  X,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { getPurchaseRequestDetails } from "../../api/requestsApi";
+import {
+  decidePurchaseRequest,
+  getApprovalEvents,
+  getPurchaseRequestDetails,
+  type ApprovalAction,
+  type ApprovalStage,
+} from "../../api/requestsApi";
 import DetailField from "../../components/DetailField";
 import StatusBadge from "../../components/StatusBadge";
 import type { RequestStatus } from "../../types/requests";
@@ -12,13 +28,22 @@ import { DateTimeFormat } from "../../utils/datetimeFormat";
 import { useAppStore } from "../../store/store";
 
 const displayStatus = (status: string) =>
-  status
-    .replaceAll("_", " ")
-    .replace(/^./, (letter) => letter.toUpperCase());
+  status.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
+
+const approvalStageForRole = (
+  role: string | undefined,
+): ApprovalStage | null => {
+  if (role === "Department Manager") return "manager";
+  if (role === "Finance Officer") return "finance";
+  if (role === "Administrator" || role === "Procurement Officer")
+    return "executive";
+  return null;
+};
 
 export default function RequestDetailsPage() {
   const { requestId = "" } = useParams();
   const { user } = useAppStore();
+  const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["request", requestId],
@@ -27,17 +52,43 @@ export default function RequestDetailsPage() {
   });
 
   const mutation = useMutation({
-    // mutationFn: updateRequestStatus,
-    // onSuccess: (value) => {
-    //   client.setQueryData(["request", requestId], value);
-    //   client.invalidateQueries({ queryKey: ["requests"] });
-    //   client.invalidateQueries({ queryKey: ["dashboard"] });
-    //   setComment("");
-    // },
+    mutationFn: (action: Exclude<ApprovalAction, "commented">) => {
+      const stage = approvalStageForRole(user?.role);
+      if (!user || !stage)
+        throw new Error("You are not allowed to approve requests.");
+      return decidePurchaseRequest({
+        requestId,
+        organizationId: user.organization_id,
+        approverId: user.id,
+        stage,
+        action,
+        comment,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["request", requestId] });
+      queryClient.invalidateQueries({ queryKey: ["purchaseRequests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["approvalEvents", requestId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      setComment("");
+    },
+  });
+
+  const { data: approvalEvents = [] } = useQuery({
+    queryKey: ["approvalEvents", requestId],
+    queryFn: () => getApprovalEvents(requestId),
+    enabled: Boolean(requestId),
   });
 
   const { data: auditLogs } = useQuery({
-    queryKey: ["auditLogs", user?.organization_id, "Purchase request", requestId],
+    queryKey: [
+      "auditLogs",
+      user?.organization_id,
+      "Purchase request",
+      requestId,
+    ],
     queryFn: () =>
       getAuditLogs({
         organizationId: user!.organization_id,
@@ -57,6 +108,31 @@ export default function RequestDetailsPage() {
       </div>
     );
 
+  const timelineEvents = [
+    ...approvalEvents.map((event) => ({
+      id: `approval-${event.id}`,
+      action: displayStatus(event.action),
+      description:
+        event.comment ||
+        `Request ${event.action} at the ${event.stage} approval stage.`,
+      actor: event.approver?.name || "Approver",
+      role: event.approver?.role || displayStatus(event.stage),
+      createdAt: event.created_at,
+    })),
+    ...(auditLogs ?? []).map((event) => ({
+      id: `audit-${event.id}`,
+      action: event.action,
+      description: event.description,
+      actor: data.requester || "System",
+      role: "",
+      createdAt: event.created_at,
+    })),
+  ].sort(
+    (first, second) =>
+      new Date(second.createdAt).getTime() -
+      new Date(first.createdAt).getTime(),
+  );
+
   return (
     <>
       <div className="back-row">
@@ -75,7 +151,10 @@ export default function RequestDetailsPage() {
           <h2>{data.title}</h2>
           <p>
             Requested by{" "}
-            {data.requester_profile?.name || data.requester || "Unknown requester"} ·{" "}
+            {data.requester_profile?.name ||
+              data.requester ||
+              "Unknown requester"}{" "}
+            ·{" "}
             {data.department_record?.name ||
               data.department ||
               "Unknown department"}
@@ -84,7 +163,10 @@ export default function RequestDetailsPage() {
         <div className="flex gap-2">
           {data.status.toLowerCase() === "draft" &&
             (data.requester_id === user?.id || user?.role !== "Employee") && (
-              <Link className="secondary-button" to={`/requests/${data.id}/edit`}>
+              <Link
+                className="secondary-button"
+                to={`/requests/${data.id}/edit`}
+              >
                 <Pencil size={17} />
                 Edit request
               </Link>
@@ -125,7 +207,9 @@ export default function RequestDetailsPage() {
                 className="info"
                 label="Department"
                 value={
-                  data.department_record?.name || data.department || "Not available"
+                  data.department_record?.name ||
+                  data.department ||
+                  "Not available"
                 }
               />
             </div>
@@ -170,7 +254,7 @@ export default function RequestDetailsPage() {
         <aside>
           <section className="panel timeline-panel">
             <h3>Activity timeline</h3>
-            {auditLogs && auditLogs.map((event, index) => (
+            {timelineEvents.map((event, index) => (
               <div className="timeline-event" key={event.id}>
                 <div className="timeline-marker">
                   {event.action === "Approved" ? (
@@ -187,51 +271,56 @@ export default function RequestDetailsPage() {
                   <strong>Request {event.action}</strong>
                   <p>{event.description}</p>
                   <small>
-                    Requested by: <b>{data?.requester}</b> · {DateTimeFormat(event.created_at)}
+                    <b>{event.actor}</b>
+                    {event.role ? ` · ${event.role}` : ""} ·{" "}
+                    {DateTimeFormat(event.createdAt)}
                   </small>
                 </div>
               </div>
             ))}
           </section>
-          {user?.role !== "Employee" && (data.status === "Pending approval" || data.status === "Draft") && (
-            <section className="panel comment-panel">
-              <label>
-                <MessageSquare size={17} />
-                Approval note
-              </label>
-              <textarea
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={3}
-                placeholder="Add a reason or note for the requester..."
-              />
-              <p>This note will appear in the audit timeline.</p>
-              {(data.status === "Pending approval" || data.status === "Draft") && (
-                <div className="approval-actions py-4">
-                  <button
-                    className="reject-button"
-                    disabled={mutation.isPending}
-                  // onClick={() =>
-                  //   mutation.mutate({ id: data.id, status: "Rejected", comment })
-                  // }
-                  >
-                    <X size={17} />
-                    Reject Request
-                  </button>
-                  <button
-                    className="approve-button"
-                    disabled={mutation.isPending}
-                  // onClick={() =>
-                  //   mutation.mutate({ id: data.id, status: "Approved", comment })
-                  // }
-                  >
-                    <Check size={17} />
-                    Approve request
-                  </button>
-                </div>
-              )}
-            </section>
-          )}
+          {approvalStageForRole(user?.role) &&
+            (data.status === "Pending approval" || data.status === "Draft") && (
+              <section className="panel comment-panel">
+                <label>
+                  <MessageSquare size={17} />
+                  Approval note
+                </label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={3}
+                  placeholder="Add a reason or note for the requester..."
+                />
+                <p>This note will appear in the audit timeline.</p>
+                {(data.status === "Pending approval" ||
+                  data.status === "Draft") && (
+                  <div className="approval-actions py-4">
+                    <button
+                      className="reject-button"
+                      disabled={mutation.isPending}
+                      onClick={() => mutation.mutate("rejected")}
+                    >
+                      <X size={17} />
+                      Reject Request
+                    </button>
+                    <button
+                      className="approve-button"
+                      disabled={mutation.isPending}
+                      onClick={() => mutation.mutate("approved")}
+                    >
+                      <Check size={17} />
+                      Approve request
+                    </button>
+                  </div>
+                )}
+                {mutation.isError && (
+                  <p className="mutation-error" role="alert">
+                    {mutation.error.message}
+                  </p>
+                )}
+              </section>
+            )}
         </aside>
       </div>
     </>

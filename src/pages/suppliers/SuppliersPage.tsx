@@ -157,22 +157,6 @@ export default function SuppliersPage() {
             placeholder="Search suppliers..."
           />
         </label>
-        <div className="segment">
-          {[
-            ["All", "All"],
-            ["active", "Active"],
-            ["under_review", "Under review"],
-            ["suspended", "Suspended"],
-          ].map(([value, label]) => (
-            <button
-              className={status === value ? "selected" : ""}
-              onClick={() => setStatus(value)}
-              key={value}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
       <Table
         data={rows}
