@@ -8,6 +8,7 @@ import { useAppStore } from "../../store/store";
 import type { Supplier } from "../../types/suppliers";
 import type { TableColumn } from "../../components/ui/Table";
 import Table from "../../components/ui/Table";
+
 export default function SuppliersPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");

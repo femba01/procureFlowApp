@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Circle, Clock3, MessageSquare, Package, Pencil, X } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Check, CheckCircle2, Circle, Clock3, MessageSquare, Package, Pencil, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { getPurchaseRequestDetails } from "../../api/requestsApi";
 import DetailField from "../../components/DetailField";
@@ -18,7 +18,7 @@ const displayStatus = (status: string) =>
 
 export default function RequestDetailsPage() {
   const { requestId = "" } = useParams();
-  const {user} = useAppStore();
+  const { user } = useAppStore();
   const [comment, setComment] = useState("");
   const { data, isLoading, isError } = useQuery({
     queryKey: ["request", requestId],
@@ -26,7 +26,17 @@ export default function RequestDetailsPage() {
     enabled: Boolean(requestId),
   });
 
-  const {data: auditLogs} = useQuery({
+  const mutation = useMutation({
+    // mutationFn: updateRequestStatus,
+    // onSuccess: (value) => {
+    //   client.setQueryData(["request", requestId], value);
+    //   client.invalidateQueries({ queryKey: ["requests"] });
+    //   client.invalidateQueries({ queryKey: ["dashboard"] });
+    //   setComment("");
+    // },
+  });
+
+  const { data: auditLogs } = useQuery({
     queryKey: ["auditLogs", user?.organization_id, "Purchase request", requestId],
     queryFn: () =>
       getAuditLogs({
@@ -71,13 +81,15 @@ export default function RequestDetailsPage() {
               "Unknown department"}
           </p>
         </div>
-        {data.status.toLowerCase() === "draft" &&
-          (data.requester_id === user?.id || user?.role !== "Employee") && (
-          <Link className="secondary-button" to={`/requests/${data.id}/edit`}>
-            <Pencil size={17} />
-            Edit request
-          </Link>
-          )}
+        <div className="flex gap-2">
+          {data.status.toLowerCase() === "draft" &&
+            (data.requester_id === user?.id || user?.role !== "Employee") && (
+              <Link className="secondary-button" to={`/requests/${data.id}/edit`}>
+                <Pencil size={17} />
+                Edit request
+              </Link>
+            )}
+        </div>
       </section>
       <div className="detail-layout">
         <div>
@@ -105,7 +117,7 @@ export default function RequestDetailsPage() {
                 value={data.cost_centre}
               />
               <DetailField
-                className="info"
+                className="info leading-4"
                 label="Preferred vendor"
                 value={data.preferred_supplier?.name || "No preference"}
               />
@@ -171,8 +183,8 @@ export default function RequestDetailsPage() {
                     <Circle />
                   )}
                 </div>
-                <div>
-                  <strong>{event.action}</strong>
+                <div className="leading-4">
+                  <strong>Request {event.action}</strong>
                   <p>{event.description}</p>
                   <small>
                     Requested by: <b>{data?.requester}</b> · {DateTimeFormat(event.created_at)}
@@ -181,7 +193,7 @@ export default function RequestDetailsPage() {
               </div>
             ))}
           </section>
-          {user?.role !== "Employee" && data.status === "Pending approval" && (
+          {user?.role !== "Employee" && (data.status === "Pending approval" || data.status === "Draft") && (
             <section className="panel comment-panel">
               <label>
                 <MessageSquare size={17} />
@@ -194,6 +206,30 @@ export default function RequestDetailsPage() {
                 placeholder="Add a reason or note for the requester..."
               />
               <p>This note will appear in the audit timeline.</p>
+              {(data.status === "Pending approval" || data.status === "Draft") && (
+                <div className="approval-actions py-4">
+                  <button
+                    className="reject-button"
+                    disabled={mutation.isPending}
+                  // onClick={() =>
+                  //   mutation.mutate({ id: data.id, status: "Rejected", comment })
+                  // }
+                  >
+                    <X size={17} />
+                    Reject Request
+                  </button>
+                  <button
+                    className="approve-button"
+                    disabled={mutation.isPending}
+                  // onClick={() =>
+                  //   mutation.mutate({ id: data.id, status: "Approved", comment })
+                  // }
+                  >
+                    <Check size={17} />
+                    Approve request
+                  </button>
+                </div>
+              )}
             </section>
           )}
         </aside>
