@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Boxes, SlidersHorizontal, ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getInventoryItemById, getStockMovementsById } from "../../api/inventoryApi";
 import StockBadge from "../../components/StockBadge";
 import { useAppStore } from "../../store/store";
 import { money } from "../../utils/currency";
 import { useState } from "react";
+import { DateTimeFormat } from "../../utils/datetimeFormat";
 
 const displayStatus = (status: string) =>
   status
@@ -13,6 +14,7 @@ const displayStatus = (status: string) =>
     .replace(/^./, (letter) => letter.toUpperCase());
 
 export default function InventoryDetailsPage() {
+  const navigate = useNavigate();
   const { itemId = "" } = useParams();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<
@@ -45,6 +47,8 @@ export default function InventoryDetailsPage() {
     );
 
   const available = data.quantity - data.reserved_quantity;
+
+  console.log(stockMovements);
 
   return (
     <>
@@ -118,15 +122,15 @@ export default function InventoryDetailsPage() {
                   <tr key={movement.id}>
                     <td>
                       <div
-                        className={`movement-type ${movement.quantity > 0 ? "positive" : "negative"}`}
+                        className={`movement-type ${movement.quantity_change > 0 ? "positive" : "negative"}`}
                       >
-                        {movement.quantity > 0 ? (
+                        {movement.quantity_change > 0 ? (
                           <ArrowDownLeft />
                         ) : (
                           <ArrowUpRight />
                         )}
                         <span>
-                          <strong>{movement.type}</strong>
+                          <strong>{movement.movement_type}</strong>
                           <small>
                             {movement.notes || movement.warehouseName}
                           </small>
@@ -135,18 +139,18 @@ export default function InventoryDetailsPage() {
                     </td>
                     <td
                       className={
-                        movement.quantity > 0
+                        movement.quantity_change > 0
                           ? "positive-number"
                           : "negative-number"
                       }
                     >
-                      {movement.quantity > 0 ? "+" : ""}
-                      {movement.quantity}
+                      {movement.quantity_change > 0 ? "+" : ""}
+                      {movement.quantity_change}
                     </td>
-                    <td>{movement.balanceAfter}</td>
+                    <td>{movement.balance_after}</td>
                     <td>{movement.reference}</td>
-                    <td>{movement.performedBy}</td>
-                    <td>{movement.createdAt}</td>
+                    <td>{movement.actor?.name}</td>
+                    <td>{DateTimeFormat(movement.created_at, { dateStyle: "medium" }, "Date")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -176,7 +180,12 @@ export default function InventoryDetailsPage() {
             Reorder when inventory reaches{" "}
             <strong>{data.reorder_level} units</strong>.
           </p>
-          <button className="secondary-button">Create purchase request</button>
+          <Link to={`/requests/new`} className="secondary-button full">
+            Create reorder request
+          </Link>
+          <p className="reorder-note">
+            This will create a purchase request for the item to be restocked.
+          </p>
         </aside>
       </div>
       {open && (

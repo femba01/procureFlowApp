@@ -93,9 +93,9 @@ export default function AppLayout() {
             <X />
           </button>
         </div>
-        <div className="workspace !py-2">
+        <div className="workspace">
           <div className="workspace-logo">AC</div>
-          <div>
+          <div className="leading-4">
             <strong>{organization?.companyName || "Acme Corporation"}</strong>
             <small>Business workspace</small>
           </div>
@@ -121,14 +121,14 @@ export default function AppLayout() {
         </nav>
         <div className="sidebar-bottom">
           {hasPermission(user?.role, "settings:manage") && (
-            <NavLink to="/settings" className={location.pathname === "/settings" ? "bg-[#25375b] !text-white" : ""}>
+            <NavLink to="/settings" className={location.pathname === "/settings" ? "bg-[#25375b]" : ""}>
               <Settings size={19} />
               Settings
             </NavLink>
           )}
           <button
             type="button"
-            className="mb-2 flex w-full items-center gap-2 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left text-[13px] font-semibold text-slate-300 hover:bg-[#25375b] hover:text-white disabled:opacity-60"
+            className="mb-2 flex w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left text-[10px] font-semibold text-slate-300 hover:bg-[#25375b] hover:text-white disabled:opacity-60"
             disabled={isLoggingOut}
             onClick={handleLogout}
           >
@@ -142,7 +142,7 @@ export default function AppLayout() {
           )}
           <div className="user-card">
             <div className="avatar">{user?.initials}</div>
-            <div className="user-card-details">
+            <div className="leading-4">
               <strong>{user?.name}</strong>
               <small>{user?.role}</small>
             </div>
@@ -168,7 +168,7 @@ export default function AppLayout() {
             >
               <Menu />
             </button>
-            <div>
+            <div className="leading-4">
               <small>Workspace / {page}</small>
               <h1>{page}</h1>
             </div>
