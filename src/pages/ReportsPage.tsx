@@ -15,17 +15,18 @@ import type { AuditLogRecord } from "../types/audit";
 import { csvCell, downloadCsv } from "../utils/csv";
 import { money } from "../utils/currency";
 import { DateTimeFormat } from "../utils/datetimeFormat";
+import Table, { type TableColumn } from "../components/ui/Table";
 
 const displayValue = (value: string) =>
-  value
-    .replaceAll("_", " ")
-    .replace(/^./, (letter) => letter.toUpperCase());
+  value.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 
 export default function ReportsPage() {
   const [tab, setTab] = useState<"spend" | "audit">("spend");
   const [query, setQuery] = useState("");
   const [departmentId, setDepartmentId] = useState("All");
-  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const organizationId = useAppStore(
+    (state) => state.user?.organization_id ?? "",
+  );
   const spendQuery = useQuery({
     queryKey: ["spend-records", organizationId],
     queryFn: () => getSpendRecords(organizationId),
@@ -100,7 +101,10 @@ export default function ReportsPage() {
       <section className="welcome">
         <div>
           <h2>Reports and audit</h2>
-          <p>Analyse organisation-wide spend and review accountable system activity.</p>
+          <p>
+            Analyse organisation-wide spend and review accountable system
+            activity.
+          </p>
         </div>
         {tab === "spend" && (
           <button className="primary-button" onClick={exportCsv}>
@@ -171,12 +175,53 @@ export default function ReportsPage() {
 
 function SpendReport({ rows }: { rows: SpendRecordReport[] }) {
   const total = rows.reduce((sum, record) => sum + record.amount, 0);
-  const largest = rows.length ? Math.max(...rows.map((record) => record.amount)) : 0;
+  const largest = rows.length
+    ? Math.max(...rows.map((record) => record.amount))
+    : 0;
+  const columns: TableColumn<SpendRecordReport>[] = [
+    {
+      key: "spent_on",
+      header: "Date",
+      render: (row) =>
+        DateTimeFormat(row.spent_on, { dateStyle: "medium" }, "Date"),
+    },
+    {
+      key: "description",
+      header: "Description",
+      render: (row) => <strong>{row.description}</strong>,
+    },
+    {
+      key: "department",
+      header: "Department",
+      render: (row) => row.department?.name || "Unknown department",
+    },
+    { key: "category", header: "Category" },
+    {
+      key: "supplier",
+      header: "Supplier",
+      render: (row) => row.supplier?.name || "No supplier",
+    },
+    {
+      key: "spend_type",
+      header: "Type",
+      render: (row) => (
+        <span className="record-type">{displayValue(row.spend_type)}</span>
+      ),
+    },
+    { key: "reference", header: "Reference" },
+    {
+      key: "amount",
+      header: "Amount",
+      className: "amount",
+      render: (row) => money(row.amount),
+    },
+  ];
   return (
     <>
       <section className="report-summary">
         <article>
-          <span>Filtered spend</span><strong>{money(total)}</strong>
+          <span>Filtered spend</span>
+          <strong>{money(total)}</strong>
           <small>{rows.length} transactions</small>
         </article>
         <article>
@@ -185,37 +230,31 @@ function SpendReport({ rows }: { rows: SpendRecordReport[] }) {
           <small>Across current results</small>
         </article>
         <article>
-          <span>Largest transaction</span><strong>{money(largest)}</strong>
+          <span>Largest transaction</span>
+          <strong>{money(largest)}</strong>
           <small>Across current results</small>
         </article>
       </section>
-      <article className="panel report-table">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th><th>Description</th><th>Department</th><th>Category</th>
-                <th>Supplier</th><th>Type</th><th>Reference</th><th>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>{DateTimeFormat(row.spent_on, { dateStyle: "medium" }, "Date")}</td>
-                  <td><strong>{row.description}</strong></td>
-                  <td>{row.department?.name || "Unknown department"}</td>
-                  <td>{row.category}</td>
-                  <td>{row.supplier?.name || "No supplier"}</td>
-                  <td><span className="record-type">{displayValue(row.spend_type)}</span></td>
-                  <td>{row.reference}</td>
-                  <td className="amount">{money(row.amount)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {rows.length === 0 && <div className="empty"><Search /><h3>No spend records found</h3></div>}
-        </div>
-      </article>
+      <Table
+        className="report-table"
+        data={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        panelTitle={true}
+        panelContent={
+          <div className="panel-title">
+            <div>
+              <h3>Spending Reports</h3>
+            </div>
+          </div>
+        }
+        emptyMessage={
+          <div className="empty">
+            <Search />
+            <h3>No spend records found</h3>
+          </div>
+        }
+      />
     </>
   );
 }
@@ -226,17 +265,26 @@ function AuditReport({ logs }: { logs: AuditLogRecord[] }) {
       <div className="audit-header">
         <div>
           <Activity />
-          <span><strong>Organisation activity</strong><small>{logs.length} matching events</small></span>
+          <span>
+            <strong>Organisation activity</strong>
+            <small>{logs.length} matching events</small>
+          </span>
         </div>
         <p>Events are chronological and retained for compliance review.</p>
       </div>
       {logs.map((log) => (
         <div className="audit-row" key={log.id}>
-          <div className={`audit-icon ${log.action.toLowerCase()}`}><Activity /></div>
-          <div className="audit-description">
+          <div className={`audit-icon ${log.action.toLowerCase()}`}>
+            <Activity />
+          </div>
+          <div className="audit-description leading-none">
             <div>
-              <span className={`audit-action ${log.action.toLowerCase()}`}>{log.action}</span>
-              <strong>{log.entity_type} · {log.entity_id || "No entity ID"}</strong>
+              <span className={`audit-action ${log.action.toLowerCase()}`}>
+                {log.action}
+              </span>
+              <strong>
+                {log.entity_type} · {log.entity_id || "No entity ID"}
+              </strong>
             </div>
             <p>{log.description}</p>
             <small>
@@ -250,18 +298,30 @@ function AuditReport({ logs }: { logs: AuditLogRecord[] }) {
               <small>
                 {Object.entries(log.metadata)
                   .slice(0, 3)
-                  .map(([key, value]) => `${displayValue(key)}: ${String(value)}`)
+                  .map(
+                    ([key, value]) => `${displayValue(key)}: ${String(value)}`,
+                  )
                   .join(" · ")}
               </small>
             )}
           </div>
         </div>
       ))}
-      {logs.length === 0 && <div className="empty"><Activity /><h3>No audit events found</h3></div>}
+      {logs.length === 0 && (
+        <div className="empty">
+          <Activity />
+          <h3>No audit events found</h3>
+        </div>
+      )}
     </article>
   );
 }
 
 function ReportError({ message }: { message: string }) {
-  return <div className="empty"><FileBarChart /><h3>{message}</h3></div>;
+  return (
+    <div className="empty">
+      <FileBarChart />
+      <h3>{message}</h3>
+    </div>
+  );
 }

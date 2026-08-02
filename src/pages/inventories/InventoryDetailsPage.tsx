@@ -1,16 +1,27 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Boxes, SlidersHorizontal, ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Boxes,
+  SlidersHorizontal,
+  ArrowDownLeft,
+  ArrowUpRight,
+  X,
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { getInventoryItemById, getStockMovementsById } from "../../api/inventoryApi";
+import {
+  getInventoryItemById,
+  getStockMovementsById,
+} from "../../api/inventoryApi";
 import StockBadge from "../../components/StockBadge";
 import { useAppStore } from "../../store/store";
 import { money } from "../../utils/currency";
 import { useState } from "react";
+import { DateTimeFormat } from "../../utils/datetimeFormat";
+import Table, { type TableColumn } from "../../components/ui/Table";
+import type { StockMovement } from "../../types/inventory";
 
 const displayStatus = (status: string) =>
-  status
-    .replaceAll("_", " ")
-    .replace(/^./, (letter) => letter.toUpperCase());
+  status.replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
 
 export default function InventoryDetailsPage() {
   const { itemId = "" } = useParams();
@@ -21,14 +32,16 @@ export default function InventoryDetailsPage() {
   const [quantity, setQuantity] = useState(1);
   const [reason, setReason] = useState("");
   const [reference, setReference] = useState("");
-  const organizationId = useAppStore((state) => state.user?.organization_id ?? "");
+  const organizationId = useAppStore(
+    (state) => state.user?.organization_id ?? "",
+  );
   const { data, isLoading, isError } = useQuery({
     queryKey: ["inventory-item", itemId, organizationId],
     queryFn: () => getInventoryItemById(itemId, organizationId),
     enabled: Boolean(itemId && organizationId),
   });
 
-  const { data: stockMovements, } = useQuery({
+  const { data: stockMovements } = useQuery({
     queryKey: ["stock-movements", itemId],
     queryFn: () => getStockMovementsById(itemId),
     enabled: Boolean(itemId),
@@ -46,6 +59,52 @@ export default function InventoryDetailsPage() {
 
   const available = data.quantity - data.reserved_quantity;
 
+  const movementColumns: TableColumn<StockMovement>[] = [
+    {
+      key: "movement_type",
+      header: "Movement",
+      render: (movement) => (
+        <div
+          className={`movement-type ${movement.quantity_change > 0 ? "positive" : "negative"}`}
+        >
+          {movement.quantity_change > 0 ? <ArrowDownLeft /> : <ArrowUpRight />}
+          <span>
+            <strong>{movement.movement_type}</strong>
+            <small>{movement.notes || movement.warehouseName}</small>
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "quantity_change",
+      header: "Quantity",
+      className: "movement-quantity",
+      render: (movement) => (
+        <span
+          className={
+            movement.quantity_change > 0 ? "positive-number" : "negative-number"
+          }
+        >
+          {movement.quantity_change > 0 ? "+" : ""}
+          {movement.quantity_change}
+        </span>
+      ),
+    },
+    { key: "balance_after", header: "Balance" },
+    { key: "reference", header: "Reference" },
+    {
+      key: "actor",
+      header: "Performed by",
+      render: (movement) => movement.actor?.name || "Unknown",
+    },
+    {
+      key: "created_at",
+      header: "Date",
+      render: (movement) =>
+        DateTimeFormat(movement.created_at, { dateStyle: "medium" }, "Date"),
+    },
+  ];
+
   return (
     <>
       <div className="back-row">
@@ -56,14 +115,17 @@ export default function InventoryDetailsPage() {
         <span>{data.sku}</span>
       </div>
       <section className="inventory-hero panel">
-        <div className="large-item-icon"><Boxes /></div>
+        <div className="large-item-icon">
+          <Boxes />
+        </div>
         <div>
           <div className="supplier-heading">
             <h2>{data.name}</h2>
             <StockBadge status={displayStatus(data.status)} />
           </div>
           <p>
-            {data.sku} · {data.category} · {data.warehouse?.name || "Unknown warehouse"}
+            {data.sku} · {data.category} ·{" "}
+            {data.warehouse?.name || "Unknown warehouse"}
           </p>
         </div>
         <button className="primary-button" onClick={() => setOpen(true)}>
@@ -73,14 +135,18 @@ export default function InventoryDetailsPage() {
       </section>
       <section className="inventory-detail-stats">
         <article className="panel">
-          <span>On hand</span><strong>{data.quantity}</strong><small>Physical inventory</small>
+          <span>On hand</span>
+          <strong>{data.quantity}</strong>
+          <small>Physical inventory</small>
         </article>
         <article className="panel">
-          <span>Available</span><strong>{available}</strong>
+          <span>Available</span>
+          <strong>{available}</strong>
           <small>After {data.reserved_quantity} reserved</small>
         </article>
         <article className="panel">
-          <span>Reorder threshold</span><strong>{data.reorder_level}</strong>
+          <span>Reorder threshold</span>
+          <strong>{data.reorder_level}</strong>
           <small>
             {data.quantity <= data.reorder_level
               ? "Reorder is required"
@@ -94,70 +160,26 @@ export default function InventoryDetailsPage() {
         </article>
       </section>
       <div className="inventory-detail-layout">
-        <section className="panel movement-panel">
-          <div className="panel-title">
-            <div>
-              <h3>Stock movement ledger</h3>
-              <p>Every quantity change with its source reference</p>
-            </div>
-          </div>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Movement</th>
-                  <th>Quantity</th>
-                  <th>Balance</th>
-                  <th>Reference</th>
-                  <th>Performed by</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stockMovements?.map((movement) => (
-                  <tr key={movement.id}>
-                    <td>
-                      <div
-                        className={`movement-type ${movement.quantity > 0 ? "positive" : "negative"}`}
-                      >
-                        {movement.quantity > 0 ? (
-                          <ArrowDownLeft />
-                        ) : (
-                          <ArrowUpRight />
-                        )}
-                        <span>
-                          <strong>{movement.type}</strong>
-                          <small>
-                            {movement.notes || movement.warehouseName}
-                          </small>
-                        </span>
-                      </div>
-                    </td>
-                    <td
-                      className={
-                        movement.quantity > 0
-                          ? "positive-number"
-                          : "negative-number"
-                      }
-                    >
-                      {movement.quantity > 0 ? "+" : ""}
-                      {movement.quantity}
-                    </td>
-                    <td>{movement.balanceAfter}</td>
-                    <td>{movement.reference}</td>
-                    <td>{movement.performedBy}</td>
-                    <td>{movement.createdAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {stockMovements?.length === 0 && (
-              <div className="no-receipts">
-                No movements recorded for this item.
+        <Table
+          className="movement-panel"
+          data={stockMovements ?? []}
+          columns={movementColumns}
+          rowKey={(movement) => movement.id}
+          panelTitle
+          panelContent={
+            <div className="panel-title">
+              <div>
+                <h3>Stock movement ledger</h3>
+                <p>Every quantity change with its source reference</p>
               </div>
-            )}
-          </div>
-        </section>
+            </div>
+          }
+          emptyMessage={
+            <div className="no-receipts">
+              No movements recorded for this item.
+            </div>
+          }
+        />
         <aside className="panel reorder-card">
           <h3>Reorder controls</h3>
           <div className="reorder-gauge">
@@ -176,7 +198,12 @@ export default function InventoryDetailsPage() {
             Reorder when inventory reaches{" "}
             <strong>{data.reorder_level} units</strong>.
           </p>
-          <button className="secondary-button">Create purchase request</button>
+          <Link to={`/requests/new`} className="secondary-button full">
+            Create reorder request
+          </Link>
+          <p className="reorder-note">
+            This will create a purchase request for the item to be restocked.
+          </p>
         </aside>
       </div>
       {open && (
@@ -277,6 +304,7 @@ export default function InventoryDetailsPage() {
                 {/* {mutation.isPending
                   ? "Saving adjustment..."
                   : "Confirm adjustment"} */}
+                  Confirm adjustment
               </button>
             </div>
           </form>

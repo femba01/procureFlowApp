@@ -5,6 +5,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { getSuppliers } from "../../api/suppliersApi";
 import SupplierFormModal from "../../components/SupplierFormModal";
 import { useAppStore } from "../../store/store";
+import type { Supplier } from "../../types/suppliers";
+import type { TableColumn } from "../../components/ui/Table";
+import Table from "../../components/ui/Table";
+
 export default function SuppliersPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
@@ -28,6 +32,75 @@ export default function SuppliersPage() {
       ),
     [data, query, status],
   );
+
+  const columns: TableColumn<Supplier>[] = [
+    {
+      key: "id",
+      header: "Supplier",
+      render: (s) => (
+        <div className="supplier-name">
+          <span>{initials(s.name)}</span>
+          <div>
+            <strong>{s.name}</strong>
+            <small>
+              {s.contact_name} · {s.location || "No location"}
+            </small>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "requester",
+      header: "Category",
+      render: (s) => (
+        <span>{ s.category }</span>
+      )
+    },
+    {
+      key: "department",
+      header: "Status",
+      render: (s) => (
+        <span
+          className={`supplier-status ${s.status.replaceAll("_", "-")}`}
+        >
+          {displayStatus(s.status)}
+        </span>
+      )
+    },
+    {
+      key: "estimated_total",
+      header: "Performance",
+      render: (s) => (
+        <div className="rating">
+          <Star size={13} />
+          <strong>{s.rating || "—"}</strong>
+          <small>{s.on_time_delivery_pct}% on time</small>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Contact",
+      render: (s) => (
+        <span>{ s.email }</span>
+      ),
+    },
+    {
+      key: "priority",
+      header: "Location",
+      render: (s) => (
+        <span>{ s.location || "—" }</span>
+      ),
+    },
+    {
+      key: "created_at",
+      header: "Quality",
+      render: (s) => (
+        <span>{ s.quality_score_pct } %</span>
+      ),
+    },
+  ];
+
   return (
     <>
       <section className="welcome">
@@ -84,79 +157,41 @@ export default function SuppliersPage() {
             placeholder="Search suppliers..."
           />
         </label>
-        <div className="segment">
-          {[
-            ["All", "All"],
-            ["active", "Active"],
-            ["under_review", "Under review"],
-            ["suspended", "Suspended"],
-          ].map(([value, label]) => (
-            <button
-              className={status === value ? "selected" : ""}
-              onClick={() => setStatus(value)}
-              key={value}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
-      <article className="panel supplier-table">
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Supplier</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Performance</th>
-                <th>Contact</th>
-                <th>Location</th>
-                <th>Quality</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((s) => (
-                <tr
-                  key={s.id}
-                  className="clickable-row"
-                  onClick={() => navigate(`/suppliers/${s.id}`)}
-                >
-                  <td>
-                    <div className="supplier-name">
-                      <span>{initials(s.name)}</span>
-                      <div>
-                        <strong>{s.name}</strong>
-                        <small>
-                          {s.contact_name} · {s.location || "No location"}
-                        </small>
-                      </div>
-                    </div>
-                  </td>
-                  <td>{s.category}</td>
-                  <td>
-                    <span
-                      className={`supplier-status ${s.status.replaceAll("_", "-")}`}
-                    >
-                      {displayStatus(s.status)}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="rating">
-                      <Star size={13} />
-                      <strong>{s.rating || "—"}</strong>
-                      <small>{s.on_time_delivery_pct}% on time</small>
-                    </div>
-                  </td>
-                  <td>{s.email}</td>
-                  <td>{s.location || "—"}</td>
-                  <td>{s.quality_score_pct}%</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </article>
+      <Table
+        data={rows}
+        columns={columns}
+        rowKey={(row) => row.id}
+        onRowClick={(row) => navigate(`/suppliers/${row.id}`)}
+        panelTitle={true}
+        panelContent={
+          <div className="tabs text-nowrap">
+            {[
+              ["All", "All"],
+              ["active", "Active"],
+              ["under_review", "Under review"],
+              ["suspended", "Suspended"],
+            ].map(([value, label]) => (
+              <button
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium transition-colors ${status === value ? "border-blue-600 text-blue-600!"
+                      : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-800"
+                    }`}
+                onClick={() => setStatus(value)}
+                key={value}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        }
+        emptyMessage={
+          <div className="empty">
+            <Search />
+            <h3>No suppliers found</h3>
+            <p>Try a different search term.</p>
+          </div>
+        }
+      />
       {open && <SupplierFormModal onClose={() => setOpen(false)} />}
     </>
   );

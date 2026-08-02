@@ -1,8 +1,8 @@
 import { GitBranch } from "lucide-react";
 import type { ReactNode } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { Warehouse } from "../../types/inventory";
 import type { OrganisationSettings } from "../../types/settings";
+import type { WarehouseRecord } from "../../api/inventoryApi";
 
 type SettingsForm = UseFormReturn<OrganisationSettings>;
 
@@ -121,7 +121,7 @@ export function ProcurementSettings({
   warehouses,
 }: {
   form: SettingsForm;
-  warehouses: Warehouse[];
+  warehouses: WarehouseRecord[];
 }) {
   return (
     <>
