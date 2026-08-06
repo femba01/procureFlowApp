@@ -41,10 +41,10 @@ export default function AppLayout() {
   const location = useLocation();
   const page = nav.find((n) => n[1] === location.pathname)?.[0] ?? "Workspace";
 
-  const {data: purchaseRequests} = useQuery({
-        queryKey: ["purchaseRequests"],
-        queryFn: () => getPurchaseRequests(user?.organization_id || "", user?.role == "Department Manager" ? user?.department_id : undefined, user?.role == "Employee" ? user?.id : undefined),
-      });
+  const { data: purchaseRequests } = useQuery({
+    queryKey: ["purchaseRequests"],
+    queryFn: () => getPurchaseRequests(user?.organization_id || "", user?.role == "Department Manager" ? user?.department_id : undefined, user?.role == "Employee" ? user?.id : undefined),
+  });
 
   const { data: organization, isLoading } = useQuery({
     queryKey: ["organizationSettings"],
@@ -76,9 +76,9 @@ export default function AppLayout() {
       </a>
       <aside
         aria-label="Primary navigation"
-        className={`sidebar ${sidebarOpen ? "open" : ""}`}
+        className={`sidebar h-screen overflow-y-auto ${sidebarOpen ? "open" : ""}`}
       >
-        <div className="brand">
+        <div className="brand py-1!">
           <span className="brand-mark">
             <PackageCheck size={22} />
           </span>
@@ -126,7 +126,7 @@ export default function AppLayout() {
               Settings
             </NavLink>
           )}
-          <button
+          {/* <button
             type="button"
             className="mb-2 flex w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-2.5 text-left text-[10px] font-semibold text-slate-300 hover:bg-[#25375b] hover:text-white disabled:opacity-60"
             disabled={isLoggingOut}
@@ -139,15 +139,15 @@ export default function AppLayout() {
             <small className="logout-error" role="alert">
               {logoutError}
             </small>
-          )}
+          )} */}
           <div className="user-card">
-            <div className="avatar">{user?.initials}</div>
-            <div className="leading-4">
-              <strong>{user?.name}</strong>
-              <small>{user?.role}</small>
-            </div>
+              <div className="avatar">{user?.initials}</div>
+              <div className="leading-4">
+                <strong>{user?.name}</strong>
+                <small>{user?.role}</small>
+              </div>
           </div>
-          
+
         </div>
       </aside>
       {sidebarOpen && (

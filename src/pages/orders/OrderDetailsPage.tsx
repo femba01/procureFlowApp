@@ -143,8 +143,44 @@ export default function OrderDetailsPage() {
           <small>{ordered} total units ordered</small>
         </article>
       </section>
-      <div className="order-detail-layout">
-        <div>
+      <section className="panel po-meta">
+        <h3>Order information</h3>
+        <hr className="text-gray-300"/>
+        <div className="flex flex-col md:gap-5 md:flex-row md:justify-between md:items-center">
+          <DetailField
+            className="po-info"
+            label="Supplier"
+            value={data.supplier?.name || "Unknown supplier"}
+          />
+          <DetailField
+            className="po-info"
+            label="Delivery address"
+            value={data.delivery_address}
+          />
+          <DetailField
+            className="po-info"
+            label="Payment terms"
+            value={data.payment_terms || "Not provided"}
+          />
+          <DetailField
+            className="po-info"
+            label="Currency"
+            value={data.currency.trim()}
+          />
+          <DetailField
+            className="po-info"
+            label="Quotation"
+            value={data.quotation_id}
+          />
+          <DetailField
+            className="po-info"
+            label="Purchase request"
+            value={data.purchase_request?.request_number || data.request_id}
+          />
+        </div>
+      </section>
+      {/* <div className="order-detail-layout"> */}
+        <div className="flex-col space-y-4">
           <Table
             className="order-items-panel"
             data={data.purchase_order_items}
@@ -174,7 +210,7 @@ export default function OrderDetailsPage() {
             </section>
           )}
         </div>
-        <aside className="panel po-meta">
+        {/* <aside className="panel po-meta">
           <h3>Order information</h3>
           <DetailField
             className="po-info"
@@ -206,8 +242,8 @@ export default function OrderDetailsPage() {
             label="Purchase request"
             value={data.purchase_request?.request_number || data.request_id}
           />
-        </aside>
-      </div>
+        </aside> */}
+      {/* </div> */}
     </>
   );
 }
