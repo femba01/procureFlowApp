@@ -56,3 +56,12 @@ export interface CreateReceiptInput {
   notes?: string;
   items: { itemId: string; quantity: number }[];
 }
+
+export interface UpdateOrderReceiptInput {
+  orderId: string;
+  organizationId: string;
+  actorId: string;
+  status:
+    "issued" | "acknowledged" | "partially_received" | "received" | "cancelled";
+  items: Array<{ id: string; receivedQuantity: number }>;
+}
