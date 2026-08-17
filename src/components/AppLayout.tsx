@@ -49,6 +49,7 @@ export default function AppLayout() {
   const { data: organization, isLoading } = useQuery({
     queryKey: ["organizationSettings"],
     queryFn: () => getOrganisationSettings(user?.organization_id || ""),
+    refetchOnMount: true,
   });
 
   if (isLoading) return <LoadingState fullPage label="Loading workspace" />;
