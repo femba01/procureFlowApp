@@ -46,7 +46,7 @@ export default function OrdersPage() {
             .toLowerCase()
             .includes(query.toLowerCase());
 
-        const matchesStatus = status === "All" || order.status === status;
+        const matchesStatus = status === "All" || order.status === status.toLowerCase().replaceAll(" ", "_");
 
         return matchesQuery && matchesStatus;
       }),
