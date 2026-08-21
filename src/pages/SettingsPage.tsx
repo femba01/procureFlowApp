@@ -162,65 +162,6 @@ export default function SettingsPage() {
           )}
         </div>
       </section>
-      {/* <div className="settings-layout">
-        <aside className="panel settings-nav">
-          <div className="settings-nav-title">
-            <Settings2 />
-            <span>
-              <strong>Configuration</strong>
-              <small>Administrator access</small>
-            </span>
-          </div>
-          {tabs.map(([id, label, Icon]) => (
-            <button
-              key={id}
-              className={tab === id ? "selected" : ""}
-              onClick={() => setTab(id)}
-            >
-              <Icon />
-              {label}
-            </button>
-          ))}
-        </aside>
-        <main className="panel settings-panel">
-          {isConfigurationTab ? (
-            <form onSubmit={save}>
-              {tab === "organisation" && (
-                <OrganisationSettingsForm form={form} />
-              )}
-              {tab === "procurement" && (
-                <ProcurementSettings form={form} warehouses={warehouses} />
-              )}
-              {tab === "approvals" && <ApprovalsSettings form={form} />}
-              {tab === "notifications" && (
-                <NotificationsSettings form={form} values={values} />
-              )}
-              {mutation.isError && (
-                <div className="settings-error" role="alert">
-                  {mutation.error.message}
-                </div>
-              )}
-              <div className="settings-footer">
-                <span>Unsaved changes are kept until you leave this page.</span>
-                <button
-                  className="primary-button"
-                  disabled={!form.formState.isDirty || mutation.isPending}
-                >
-                  <Save size={16} />
-                  Save configuration
-                </button>
-              </div>
-            </form>
-          ) : tab === "departments" ? (
-            <DepartmentsSettings organizationId={user?.organization_id ?? ""} />
-          ) : (
-            <UsersSettings
-              organizationId={user?.organization_id ?? ""}
-              currentUserId={user?.id ?? ""}
-            />
-          )}
-        </main>
-      </div> */}
     </>
   );
 }
