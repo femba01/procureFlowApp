@@ -7,9 +7,6 @@ import type { Permission } from "./types/permissions";
 import { LoadingState } from "./components/ui";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
-const InvitationRegistrationPage = lazy(
-  () => import("./pages/auth/InvitationRegistrationPage"),
-);
 const NewRequestPage = lazy(() => import("./pages/requests/NewRequestPage"));
 const RequestDetailsPage = lazy(
   () => import("./pages/requests/RequestDetailsPage"),
@@ -59,10 +56,6 @@ export default function App() {
     <Suspense fallback={<LoadingState fullPage label="Loading workspace" />}>
       <Routes>
         <Route path="/supplier/quotation" element={<SupplierQuotationPage />} />
-        <Route
-          path="/register/invitation"
-          element={<InvitationRegistrationPage />}
-        />
         {!user ? (
           <>
             <Route path="/login" element={<LoginPage />} />

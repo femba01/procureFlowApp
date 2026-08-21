@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import type { Role, User } from "../../types/auth";
+import type { User } from "../../types/auth";
 import { Button } from "../ui/Button";
 import Table, { type TableColumn } from "../ui/Table";
 import { getAllUsers } from "../../api/profilesApi";
