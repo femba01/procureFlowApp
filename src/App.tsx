@@ -7,21 +7,34 @@ import type { Permission } from "./types/permissions";
 import { LoadingState } from "./components/ui";
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const LoginPage = lazy(() => import("./pages/auth/LoginPage"));
+const InvitationRegistrationPage = lazy(
+  () => import("./pages/auth/InvitationRegistrationPage"),
+);
 const NewRequestPage = lazy(() => import("./pages/requests/NewRequestPage"));
-const RequestDetailsPage = lazy(() => import("./pages/requests/RequestDetailsPage"));
+const RequestDetailsPage = lazy(
+  () => import("./pages/requests/RequestDetailsPage"),
+);
 const RequestsPage = lazy(() => import("./pages/requests/RequestsPage"));
 const SuppliersPage = lazy(() => import("./pages/suppliers/SuppliersPage"));
-const SupplierDetailsPage = lazy(() => import("./pages/suppliers/SupplierDetailsPage"));
+const SupplierDetailsPage = lazy(
+  () => import("./pages/suppliers/SupplierDetailsPage"),
+);
 const QuotationsPage = lazy(() => import("./pages/quotation/QuotationsPage"));
 const SupplierQuotationPage = lazy(
   () => import("./pages/quotation/SupplierQuotationPage"),
 );
 const OrdersPage = lazy(() => import("./pages/orders/OrdersPage"));
 const OrderDetailsPage = lazy(() => import("./pages/orders/OrderDetailsPage"));
-const GenerateOrderPage = lazy(() => import("./pages/orders/GenerateOrderPage"));
+const GenerateOrderPage = lazy(
+  () => import("./pages/orders/GenerateOrderPage"),
+);
 const InventoryPage = lazy(() => import("./pages/inventories/InventoryPage"));
-const NewInventoryPage = lazy(() => import("./pages/inventories/NewInventoryPage"));
-const InventoryDetailsPage = lazy(() => import("./pages/inventories/InventoryDetailsPage"));
+const NewInventoryPage = lazy(
+  () => import("./pages/inventories/NewInventoryPage"),
+);
+const InventoryDetailsPage = lazy(
+  () => import("./pages/inventories/InventoryDetailsPage"),
+);
 const BudgetsPage = lazy(() => import("./pages/BudgetsPage"));
 const ReportsPage = lazy(() => import("./pages/ReportsPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -43,13 +56,13 @@ export default function App() {
   }
 
   return (
-    <Suspense
-      fallback={
-        <LoadingState fullPage label="Loading workspace" />
-      }
-    >
+    <Suspense fallback={<LoadingState fullPage label="Loading workspace" />}>
       <Routes>
         <Route path="/supplier/quotation" element={<SupplierQuotationPage />} />
+        <Route
+          path="/register/invitation"
+          element={<InvitationRegistrationPage />}
+        />
         {!user ? (
           <>
             <Route path="/login" element={<LoginPage />} />

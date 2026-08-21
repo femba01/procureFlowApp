@@ -9,6 +9,14 @@ export const getProfiles = async (userId: string) => {
     return data as User;
 }
 
+export const getAllUsers = async (organizationId: string) => {
+    const { data, error } = await supabase.from('profiles').select('*').eq('organization_id', organizationId);
+    if (error) {
+        throw new Error(error.message);
+    }
+    return data as User[];
+}
+
 export interface ProfileOption {
   id: string;
   name: string;

@@ -15,7 +15,7 @@
 }
 .settings-layout {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 2fr);
   gap: 16px;
   align-items: start;
 }

@@ -11,9 +11,14 @@ export interface User {
   email: string;
   role: Role;
   department_id: string;
+  department?: {
+    id: string;
+    name: string;
+  };
   organization_id: string;
   auth_user_id: string;
   initials: string;
+  created_at?: string;
 }
 
 export interface Actor {

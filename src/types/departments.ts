@@ -3,5 +3,5 @@ export interface Department {
   name: string;
   organizationId: string;
   code: string;
-  createdAt: string;
+  created_at: string;
 }
